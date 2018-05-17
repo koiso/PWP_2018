@@ -379,36 +379,22 @@ class Connection(object):
         :param value:
         :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
         '''
-        query1 = 'SELECT humidity FROM WIND_DATA WHERE date = ?'
-        query2 = 'UPDATE WIND_DATA SET humidity = ? WHERE date = ?'
+
+        query = 'UPDATE WIND_DATA SET humidity = ? WHERE date = ?'
 
         #check if temperature already deleted
+        qvalue = (value, timestamp,)
+
+        #modify value
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
-        qvalue = (timestamp,)
-        cur.execute(query1, qvalue,)
-        row = cur.fetchone()
-
-        #if timestamp does not exist
-        if row is None:
+        try:
+            cur.execute(query, qvalue)
+            self.con.commit()
+            return True
+        except sqlite3.Error as e:
+            print("Error %s:" % (e.args[0]))
             return False
-        else:
-            temp = row["humidity"]
-        #if temperature is already deleted
-        if temp == "":
-            return False
-        else:
-            #remove value
-            self.con.row_factory = sqlite3.Row
-            cur = self.con.cursor()
-            qvalue = (timestamp,)
-            try:
-                cur.execute(query2, qvalue,)
-                self.con.commit()
-                return True
-            except sqlite3.Error as e:
-                print("Error %s:" % (e.args[0]))
-                return False
 
 
     def get_batteries(self, start=-1, end=-1):
@@ -668,7 +654,7 @@ class Connection(object):
 
     #STUFF
     def contains_timestamp(self, timestamp):
-        query1 = 'SELECT humidity FROM WIND_DATA WHERE date = ?'
+        query1 = 'SELECT * FROM WIND_DATA WHERE date = ?'
         #check if there is timestamp in DB
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
@@ -680,10 +666,11 @@ class Connection(object):
         if row is None:
             return False
         else:
+            return True
 
     '''
         TODO: 
-        create other methods for modifying (put) and create(post)
+        create  methods for modifying (put) and create (post)
             
         
 #this query might need correction...Perkels DELETING WHOLE ROW

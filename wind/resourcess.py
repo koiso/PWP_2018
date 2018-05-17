@@ -122,10 +122,38 @@ class Humidity(Resource):
         return jsonify(humidity_db)
 
     #modifies the humidity value with @ timestamp
-    def put(self, timestamp, value):
+    def put(self, timestamp):
+        '''
+        REQUEST HUMIDITY VALUE:
+        * Media type: JSON
+
+        OUTPUT:
+         * Returns 204 if the message is modified correctly
+         * Returns 400 if the body of the request is not well formed or it is
+           empty.
+         * Returns 404 if there is no message with messageid
+         * Returns 415 if the input is not JSON.
+         * Returns 500 if the database cannot be modified
+        '''
+
         #eli napataaan urin perästä json ja puretaan se parametreiksi: timestamp ja value, ja passataan deebeelle
+        if not g.con.contains_timestamp(timestamp):
+            return create_error_response(404, "timestamp not found", "there is no humidity value with given timsstamp %s" %timestamp)
 
+        if JSON != request.headers.get("Content-Type",""):
+            return create_error_response(415, "UnsupportedMediaType",
+                                         "Use a JSON compatible format")
+        request_body = request.get_json(force=True)
 
+        try:
+            value = request_body["humidity"]
+        except KeyError:
+            return create_error_response(400, "Wrong request format", "Be sure you include new humidity value   ")
+
+        else:
+            if not g.con.modify_humidity(timestamp, value):
+                return create_error_response(500, "Internal error", "Humidity information for %s cannot be updated" % value)
+            return "", 204
 
 
 class Temperature(Resource):
@@ -267,3 +295,4 @@ api.add_resource(Humidity, '/wind/api/humidity/<timestamp>', endpoint='humidity'
 #run app
 if __name__ == '__main__':
     app.run(debug=True)
+
