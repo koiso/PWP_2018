@@ -46,7 +46,7 @@ class Engine(object):
         '''
         return Connection(self.db_path)
 
-
+#little bit borrowed from exercise
 class Connection(object):
     '''
        API to access the PWP_DATA database.
@@ -89,8 +89,6 @@ class Connection(object):
 
     # HELPERS
     # Here the helpers that transform database rows into dictionary. They work
-    # similarly to ORM
-
     # Helper for speed
     def _create_speed_object(self, row):
         timestamp = row['date']
@@ -107,7 +105,7 @@ class Connection(object):
     def _create_temperature_object(self, row):
         timestamp = row['date']
         value = row['temperature']
-        temperature = {'timestamp': timestamp, 'temperature': value / 10}
+        temperature = {'timestamp': timestamp, 'temperature': value}
         return temperature
 
     def _create_humidity_object(self, row):
@@ -160,27 +158,64 @@ class Connection(object):
             return self._create_speed_object(row)
 
 
-    def delete_speed(self, timestamp):
+    def get_temperature(self, timestamp):
+        #Query for temp
+        query = 'SELECT * FROM WIND_DATA WHERE date = ?'
+
+        #cursor & row init
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+
+        #Execute main SQL statement
+        qvalue = (timestamp,)
+        cur.execute(query, qvalue)
+
+        #Do the response shait
+        row = cur.fetchone()
+        if row is None:
+            return None
+        #build return object
+        else:
+            return self._create_temperature_object(row)
+
+
+    def delete_temperature(self, timestamp):
         '''
-        deletes the speed value with given timestamp
+        deletes the temperature value with given timestamp
         :param timestamp:
-        :return: True if value was deleted, else False
+        :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
         '''
 
-        #this query might need correction...***
-        query = 'DELETE FROM WIND_DATA WHERE date = ?'
+        query1 = 'SELECT temperature FROM WIND_DATA WHERE date = ?'
+        query2 = 'UPDATE WIND_DATA SET temperature = "" WHERE date = ?'
+
+        #check if temperature already deleted
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         qvalue = (timestamp,)
-        try:
-            cur.execute(query, qvalue,)
-            self.con.commit()
-        except sqlite3.Error as e:
-            print("Error %s:" % (e.args[0]))
-        if cur.rowcount < 1:
+        cur.execute(query1, qvalue,)
+        row = cur.fetchone()
+
+        #if timestamp does not exist
+        if row is None:
             return False
         else:
-            return True
+            temp = row["temperature"]
+        #if temperature is already deleted
+        if temp == "":
+            return False
+        else:
+            #remove value
+            self.con.row_factory = sqlite3.Row
+            cur = self.con.cursor()
+            qvalue = (timestamp,)
+            try:
+                cur.execute(query2, qvalue,)
+                self.con.commit()
+                return True
+            except sqlite3.Error as e:
+                print("Error %s:" % (e.args[0]))
+                return False
 
 
     def add_speed(self, timestamp, speed):
@@ -269,7 +304,7 @@ class Connection(object):
 
         #cursor & row init
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
+        cur = self.con.cursor()
 
         #Execute main SQL statement
         pvalue = (timestamp,)
@@ -283,8 +318,100 @@ class Connection(object):
         return self._create_battery_object(row)
 
 
-    def get_batteries(self, start=-1, end=-1):
+    def get_humidity(self, timestamp):
+        query = 'SELECT * FROM WIND_DATA WHERE date = ?'
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        pvalue = (timestamp,)
+        cur.execute(query, pvalue)
 
+        #Do the response shait
+        row = cur.fetchone()
+        if row  is None:
+            return None
+        #build return object
+        return self._create_humidity_object(row)
+
+
+    def delete_humidity(self, timestamp):
+        '''
+        deletes the humidity value with a given timestamp
+        :param timestamp:
+        :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
+        '''
+
+        query1 = 'SELECT humidity FROM WIND_DATA WHERE date = ?'
+        query2 = 'UPDATE WIND_DATA SET humidity = "" WHERE date = ?'
+
+        #check if temperature already deleted
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        qvalue = (timestamp,)
+        cur.execute(query1, qvalue,)
+        row = cur.fetchone()
+
+        #if timestamp does not exist
+        if row is None:
+            return False
+        else:
+            temp = row["humidity"]
+        #if temperature is already deleted
+        if temp == "":
+            return False
+        else:
+            #remove value
+            self.con.row_factory = sqlite3.Row
+            cur = self.con.cursor()
+            qvalue = (timestamp,)
+            try:
+                cur.execute(query2, qvalue,)
+                self.con.commit()
+                return True
+            except sqlite3.Error as e:
+                print("Error %s:" % (e.args[0]))
+                return False
+
+
+    def modify_humidity(self, timestamp, value):
+        '''
+        modifies the humidity value on timestamp with value given as argument
+        :param timestamp:
+        :param value:
+        :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
+        '''
+        query1 = 'SELECT humidity FROM WIND_DATA WHERE date = ?'
+        query2 = 'UPDATE WIND_DATA SET humidity = ? WHERE date = ?'
+
+        #check if temperature already deleted
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        qvalue = (timestamp,)
+        cur.execute(query1, qvalue,)
+        row = cur.fetchone()
+
+        #if timestamp does not exist
+        if row is None:
+            return False
+        else:
+            temp = row["humidity"]
+        #if temperature is already deleted
+        if temp == "":
+            return False
+        else:
+            #remove value
+            self.con.row_factory = sqlite3.Row
+            cur = self.con.cursor()
+            qvalue = (timestamp,)
+            try:
+                cur.execute(query2, qvalue,)
+                self.con.commit()
+                return True
+            except sqlite3.Error as e:
+                print("Error %s:" % (e.args[0]))
+                return False
+
+
+    def get_batteries(self, start=-1, end=-1):
         #Create SQL statement
         #query = 'SELECT * FROM WIND_DATA WHERE date > %s AND date < %s ORDER BY date ASC' % str(start) % str(end)
         query = 'SELECT * FROM WIND_DATA'
@@ -325,7 +452,7 @@ class Connection(object):
     def get_direction(self, timestamp):
         query = 'SELECT * FROM WIND_DATA WHERE date = ?'
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
+        cur = self.con.cursor()
         pvalue = (timestamp,)
         cur.execute(query, pvalue)
 
@@ -338,7 +465,6 @@ class Connection(object):
 
 
     def get_directions(self, start=-1, end=-1):
-
         #Create SQL statement
         #query = 'SELECT * FROM WIND_DATA WHERE date > %s AND date < %s ORDER BY date ASC' % str(start) % str(end)
         query = 'SELECT * FROM WIND_DATA'
@@ -379,7 +505,7 @@ class Connection(object):
     def get_std_speed(self, timestamp):
         query = 'SELECT * FROM WIND_DATA WHERE date = ?'
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
+        cur = self.con.cursor()
         pvalue = (timestamp,)
         cur.execute(query, pvalue)
 
@@ -393,7 +519,7 @@ class Connection(object):
     def get_vertical_velocity(self, timestamp):
         query = 'SELECT * FROM WIND_DATA WHERE date = ?'
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
+        cur = self.con.cursor()
         pvalue = (timestamp,)
         cur.execute(query, pvalue)
 
@@ -407,7 +533,7 @@ class Connection(object):
     def get_std_vertical_velocity(self, timestamp):
         query = 'SELECT * FROM WIND_DATA WHERE date = ?'
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
+        cur = self.con.cursor()
         pvalue = (timestamp,)
         cur.execute(query, pvalue)
 
@@ -422,7 +548,7 @@ class Connection(object):
     def get_quality(self, timestamp):
         query = 'SELECT * FROM WIND_DATA WHERE date = ?'
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
+        cur = self.con.cursor()
         pvalue = (timestamp,)
         cur.execute(query, pvalue)
 
@@ -437,7 +563,7 @@ class Connection(object):
     def get_pressure(self, timestamp):
         query = 'SELECT * FROM WIND_DATA WHERE date = ?'
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
+        cur = self.con.cursor()
         pvalue = (timestamp,)
         cur.execute(query, pvalue)
 
@@ -449,38 +575,45 @@ class Connection(object):
         return self._create_pressure_object(row)
 
 
-    def get_humidity(self, timestamp):
-        query = 'SELECT * FROM WIND_DATA WHERE date = ?'
+    def get_humidities(self, start=-1, end=-1):
+        # Create SQL statement
+        # query = 'SELECT * FROM WIND_DATA WHERE date > %s AND date < %s ORDER BY date ASC' % str(start) % str(end)
+        query = 'SELECT * FROM WIND_DATA'
+
+        if start != -1 or end != -1:
+            query += ' WHERE'
+
+        # startpoint for dates if set
+        if start != -1:
+            query += ' date > %s' % str(start)
+
+        if end != -1:
+            query += ' AND'
+            query += ' date < %s' % str(end)
+
+        # sort
+        query += ' ORDER BY date ASC'
+
+        # cursor & row init
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
-        pvalue = (timestamp,)
-        cur.execute(query, pvalue)
+        cur = self.con.cursor()
 
-        #Do the response shait
-        row = cur.fetchone()
-        if row  is None:
+        # Execute SQL statement
+        cur.execute(query)
+
+        # results
+        rows = cur.fetchall()
+        if rows is None:
             return None
-        #build return object
-        return self._create_humidity_object(row)
-
-
-    def get_temperature(self, timestamp):
-        query = 'SELECT * FROM WIND_DATA WHERE date = ?'
-        self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
-        pvalue = (timestamp,)
-        cur.execute(query, pvalue)
-
-        #Do the response shait
-        row = cur.fetchone()
-        if row  is None:
-            return None
-        #build return object
-        return self._create_temperature_object(row)
+        # build return object
+        humidities = []
+        for row in rows:
+            humi = self._create_humidity_object(row)
+            humidities.append(humi)
+        return humidities
 
 
     def get_temperatures(self, start=-1, end=-1):
-
         #Create SQL statement
         #query = 'SELECT * FROM WIND_DATA WHERE date > %s AND date < %s ORDER BY date ASC' % str(start) % str(end)
         query = 'SELECT * FROM WIND_DATA'
@@ -521,7 +654,7 @@ class Connection(object):
     def get_pressure(self, timestamp):
         query = 'SELECT * FROM WIND_DATA WHERE date = ?'
         self.con.row_factory = sqlite3.Row
-        cur = sel.con.cursor()
+        cur = self.con.cursor()
         pvalue = (timestamp,)
         cur.execute(query, pvalue)
 
@@ -533,10 +666,41 @@ class Connection(object):
         return self._create_pressure_object(row)
 
 
+    #STUFF
+    def contains_timestamp(self, timestamp):
+        query1 = 'SELECT humidity FROM WIND_DATA WHERE date = ?'
+        #check if there is timestamp in DB
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        qvalue = (timestamp,)
+        cur.execute(query1, qvalue,)
+        row = cur.fetchone()
+
+        #if timestamp does not exist
+        if row is None:
+            return False
+        else:
+
     '''
         TODO: 
-        create rest of list methods (check get speeds)
-        create other methods for deleting, modifying, update and create
+        create other methods for modifying (put) and create(post)
+            
+        
+#this query might need correction...Perkels DELETING WHOLE ROW
+query = 'DELETE FROM WIND_DATA WHERE date = ?'
+self.con.row_factory = sqlite3.Row
+cur = self.con.cursor()
+qvalue = (timestamp,)
+try:
+    cur.execute(query, qvalue,)
+    self.con.commit()
+except sqlite3.Error as e:
+    print("Error %s:" % (e.args[0]))
+if cur.rowcount < 1:
+    return False
+else:
+    return True
+        
     '''
 
 

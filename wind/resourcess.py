@@ -93,6 +93,62 @@ class Temperatures(Resource):
         return jsonify(temperatures_db)
 
 
+class Humidities(Resource):
+    def get(self):
+        humidities_db = g.con.get_humidities()
+        make_response
+        return jsonify(humidities_db)
+
+
+class Humidity(Resource):
+    #delete humidity value
+    def delete(self, timestamp):
+        if g.con.delete_humidity(timestamp):
+            return "", 204
+        else:
+            return create_error_response(404, "Unknown timestamp",
+                                         "There is no a humidity value with timestamp %s" % timestamp)
+    #get humidity value
+    def get(self, timestamp):
+        humidity_db = g.con.get_humidity(timestamp)
+        if not humidity_db:
+            #why not 404, still 200?--> CHECK
+            #return create_error_response(400, "Wrong request format", "Be sure you include message title and body")
+
+            abort(404, message="There is no humidity data with timestamp %s" % timestamp,
+                  resource_type="Humidity",
+                  resource_url=request.path,
+                  resource_id=timestamp)
+        return jsonify(humidity_db)
+
+    #modifies the humidity value with @ timestamp
+    def put(self, timestamp, value):
+        #eli napataaan urin perästä json ja puretaan se parametreiksi: timestamp ja value, ja passataan deebeelle
+
+
+
+
+class Temperature(Resource):
+    def delete(self, timestamp):
+        if g.con.delete_temperature(timestamp):
+            return "", 204
+        else:
+            return create_error_response(404, "Unknown timestamp",
+                                         "There is no a temperature value with timestamp %s" % timestamp)
+
+    def get(self, timestamp):
+        temperature_db = g.con.get_temperature(timestamp)
+        if not temperature_db:
+            #why not 404, still 200?--> CHECK
+            #return create_error_response(400, "Wrong request format", "Be sure you include message title and body")
+
+            abort(404, message="There is no temperature data with timestamp %s" % timestamp,
+                  resource_type="Temperature",
+                  resource_url=request.path,
+                  resource_id=timestamp)
+        return jsonify(temperature_db)
+
+
 class Speed(Resource):
     #@app.route('/wind/api/speed/', methods=['GET'])
     #@app.route('/wind/api/speed/<timestamp>', methods=['GET'])
@@ -123,6 +179,7 @@ class Speed(Resource):
         return jsonify(speed_db)
 
 
+    '''
     def delete(self, timestamp):
         if g.con.delete_speed(timestamp):
             return "", 204
@@ -130,7 +187,7 @@ class Speed(Resource):
             return create_error_response(404, "Unknown timestamp",
                                          "There is no a speed value with timestamp %s"
                                          % timestamp)
-
+    '''
 
 
 #ERROR HANDLERS Borrowed slightly from exercises...
@@ -199,8 +256,12 @@ api.add_resource(Speeds, '/wind/api/speeds/', endpoint='speeds')
 api.add_resource(Batteries, '/wind/api/batteries/')
 api.add_resource(Temperatures, '/wind/api/temperatures/')
 api.add_resource(Directions, '/wind/api/directions/')
+api.add_resource(Humidities, '/wind/api/humidities/')
 
+
+api.add_resource(Temperature, '/wind/api/temperature/<timestamp>', endpoint='temperature')
 api.add_resource(Speed, '/wind/api/speed/<timestamp>', endpoint='speed')
+api.add_resource(Humidity, '/wind/api/humidity/<timestamp>', endpoint='humidity')
 
 
 #run app
