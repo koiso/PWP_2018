@@ -13,7 +13,6 @@ import dbhandler
 JSON = "application/json"
 
 
-
 #for testing
 app = Flask(__name__)
 app.config.update({"Engine": dbhandler.Engine()})
@@ -37,80 +36,88 @@ api = Api(app)
 '''
 
 #Define the resources
-#Class Speeds(Resource):
-'''
-Implements resource speeds
-'''
-
-@app.route('/wind/api/speeds/', methods=['GET'])
-def get_speeds():
+class Speeds(Resource):
     '''
-    get all speeds
-
-    INPUT params:
-        optional start, end.
-
+    Implements resource speeds
     '''
-    #extract speeds from db
-    speeds_db = g.con.get_speeds()
-    make_response()
-    return jsonify(speeds_db)
+
+    #@app.route('/wind/api/speeds/', methods=['GET'])
+    def get(self):
+        '''
+        get all speeds
+
+        INPUT params:
+            optional start, end.
+
+        '''
+        #extract speeds from db
+        speeds_db = g.con.get_speeds()
+        make_response()
+        return jsonify(speeds_db)
+
+
 """
-ENVELOPE SHAIT HERE IF NEEDED....NOPE
-envelope = []
-for speed in speeds_db:
-    timestamp = speed["timestamp"],
-    value = speed["speed"]
-    envelope.append(timestamp, value)
-    envelope.append(timestamp)
-
-return Response(json.dumps(envelope), status_code, mimetype=MASON+";"+ERROR_PROFILE)
-return Response(json.dumps(speeds_db))
+    ENVELOPE SHAIT HERE IF NEEDED....NOPE
+    envelope = []
+    for speed in speeds_db:
+        timestamp = speed["timestamp"],
+        value = speed["speed"]
+        envelope.append(timestamp, value)
+        envelope.append(timestamp)
+    
+    return Response(json.dumps(envelope), status_code, mimetype=MASON+";"+ERROR_PROFILE)
+    return Response(json.dumps(speeds_db))
 """
 
-@app.route('/wind/api/batteries/', methods=['GET'])
-def get_batteries():
-    batteries_db = g.con.get_batteries()
-    make_response
-    return jsonify(batteries_db)
+class Batteries(Resource):
+    #@app.route('/wind/api/batteries/', methods=['GET'])
+    def get(self):
+        batteries_db = g.con.get_batteries()
+        make_response
+        return jsonify(batteries_db)
 
 
-@app.route('/wind/api/directions/', methods=['GET'])
-def get_directions():
-    directions_db = g.con.get_directions()
-    make_response
-    return jsonify(directions_db)
+class Directions(Resource):
+    #@app.route('/wind/api/directions/', methods=['GET'])
+    def get(self):
+        directions_db = g.con.get_directions()
+        make_response
+        return jsonify(directions_db)
 
 
-@app.route('/wind/api/temperatures/', methods=['GET'])
-def get_temperatures():
-    temperatures_db = g.con.get_temperatures()
-    make_response
-    return jsonify(temperatures_db)
+class Temperatures(Resource):
+    #@app.route('/wind/api/temperatures/', methods=['GET'])
+    def get(self):
+        temperatures_db = g.con.get_temperatures()
+        make_response
+        return jsonify(temperatures_db)
 
 
-#@app.route('/wind/api/speed/', methods=['GET'])
-@app.route('/wind/api/speed/<timestamp>', methods=['GET'])
-def get_speed(timestamp):
-    '''
-    :param timestamp:
-    '''
-    #time = request.params('timestamp')
-    #time = request.args.get('timestamp')
-    speed_db = g.con.get_speed(timestamp)
+class Speed(Resource):
+    #@app.route('/wind/api/speed/', methods=['GET'])
+    #@app.route('/wind/api/speed/<timestamp>', methods=['GET'])
+    def get(self, timestamp):
+        '''
+        :param timestamp:
+        '''
+        #time = request.params('timestamp')
+        #time = request.args.get('timestamp')
+        speed_db = g.con.get_speed(timestamp)
 
-    if not speed_db:
-        #why not 404, still 200?--> CHECK
-        #return create_error_response(400, "Wrong request format", "Be sure you include message title and body")
+        if not speed_db:
+            #why not 404, still 200?--> CHECK
+            #return create_error_response(400, "Wrong request format", "Be sure you include message title and body")
 
-        abort(404, message="There is no speed data with timestamp %s" % timestamp,
-              resource_type="Speed",
-              resource_url=request.path,
-              resource_id=timestamp)
+            abort(404, message="There is no speed data with timestamp %s" % timestamp,
+                  resource_type="Speed",
+                  resource_url=request.path,
+                  resource_id=timestamp)
 
-    return jsonify(speed_db)
+        return jsonify(speed_db)
 
 
+
+'''
 #@app.route('/wind/api/speed/<timestamp>/<speed>', methods=['POST'])
 @app.route('/wind/api/speed/<timestamp>', methods=['POST'])
 #def add_speed(timestamp):
@@ -118,7 +125,7 @@ def add_speed(timestamp):
     speed_db = g.con.add_speed(timestamp)
 
     return jsonify(speed_db)
-
+'''
 
 
 
@@ -198,6 +205,12 @@ def close_connection(exc):
 
 #api.add_resource(Speeds, "/wind/api/speeds/", endpoint="speeds")
 #api.add_resource(get_speed, "/wind/api/speed:timestamp", endpoint="speed")
+api.add_resource(Speeds, '/wind/api/speeds/')
+api.add_resource(Batteries, '/wind/api/batteries/')
+api.add_resource(Temperatures, '/wind/api/temperatures/')
+api.add_resource(Directions, '/wind/api/directions/')
+
+api.add_resource(Speed, '/wind/api/speed/<timestamp>')
 
 
 #run app
