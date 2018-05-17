@@ -102,6 +102,7 @@ class Speed(Resource):
         '''
         #time = request.params('timestamp')
         #time = request.args.get('timestamp')
+
         speed_db = g.con.get_speed(timestamp)
 
         if not speed_db:
@@ -112,37 +113,26 @@ class Speed(Resource):
                   resource_type="Speed",
                   resource_url=request.path,
                   resource_id=timestamp)
+        return jsonify(speed_db)
 
+    def put(self, timestamp):
+        args = request.args
+        timestamp = args['timestamp']
+        speed = args['speed']
+        speed_db = g.con.add_speed(timestamp, speed)
         return jsonify(speed_db)
 
 
-
-'''
-#@app.route('/wind/api/speed/<timestamp>/<speed>', methods=['POST'])
-@app.route('/wind/api/speed/<timestamp>', methods=['POST'])
-#def add_speed(timestamp):
-def add_speed(timestamp):
-    speed_db = g.con.add_speed(timestamp)
-
-    return jsonify(speed_db)
-'''
+    def delete(self, timestamp):
+        if g.con.delete_speed(timestamp):
+            return "", 204
+        else:
+            return create_error_response(404, "Unknown timestamp",
+                                         "There is no a speed value with timestamp %s"
+                                         % timestamp)
 
 
 
-#still working on this
-@app.route('/wind/api/speed/<timestamp>', methods=['DELETE'])
-def delete_speed(timestamp):
-    if g.con.delete_speed(timestamp):
-        return "", 204
-    else:
-        return create_error_response(404, "Unknown timestamp",
-                                     "There is no a speed value with timestamp %s"
-                                     % nickname)
-
-
-
-
-#fix errorr händling, should return correct codes to flask too? return RESPONSE DO THIS
 #ERROR HANDLERS Borrowed slightly from exercises...
 def create_error_response(status_code, title, message):
     """
@@ -205,12 +195,12 @@ def close_connection(exc):
 
 #api.add_resource(Speeds, "/wind/api/speeds/", endpoint="speeds")
 #api.add_resource(get_speed, "/wind/api/speed:timestamp", endpoint="speed")
-api.add_resource(Speeds, '/wind/api/speeds/')
+api.add_resource(Speeds, '/wind/api/speeds/', endpoint='speeds')
 api.add_resource(Batteries, '/wind/api/batteries/')
 api.add_resource(Temperatures, '/wind/api/temperatures/')
 api.add_resource(Directions, '/wind/api/directions/')
 
-api.add_resource(Speed, '/wind/api/speed/<timestamp>')
+api.add_resource(Speed, '/wind/api/speed/<timestamp>', endpoint='speed')
 
 
 #run app

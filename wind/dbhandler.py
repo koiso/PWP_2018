@@ -168,16 +168,19 @@ class Connection(object):
         '''
 
         #this query might need correction...***
-        query = 'DELETE 50_speed FROM WIND_DATA WHERE date = ?'
+        query = 'DELETE FROM WIND_DATA WHERE date = ?'
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         qvalue = (timestamp,)
-        cur.execute(query, qvalue)
-        self.con.commit()
+        try:
+            cur.execute(query, qvalue,)
+            self.con.commit()
+        except sqlite3.Error as e:
+            print("Error %s:" % (e.args[0]))
         if cur.rowcount < 1:
             return False
         else:
-            return true
+            return True
 
 
     def add_speed(self, timestamp, speed):
