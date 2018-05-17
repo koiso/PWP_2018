@@ -6,7 +6,6 @@ from flask import Flask, request, Response, g, _request_ctx_stack, redirect, sen
 from flask_restful import Resource, Api, abort
 from werkzeug.exceptions import NotFound,  UnsupportedMediaType
 
-#from wind.utils import RegexConverter
 import dbhandler
 
 #Constants for formats
@@ -129,9 +128,9 @@ class Humidity(Resource):
 
         OUTPUT:
          * Returns 204 if the message is modified correctly
-         * Returns 400 if the body of the request is not well formed or it is
+         * Returns 400 if the request is not well formed or it is
            empty.
-         * Returns 404 if there is no message with messageid
+         * Returns 404 if there is no timestamp with given value
          * Returns 415 if the input is not JSON.
          * Returns 500 if the database cannot be modified
         '''
@@ -177,6 +176,40 @@ class Temperature(Resource):
         return jsonify(temperature_db)
 
 
+    def put(self, timestamp):
+        '''
+        REQUEST TEMPERATURE VALUE:
+        * Media type: JSON
+
+        OUTPUT:
+         * Returns 204 if the message is modified correctly
+         * Returns 400 if the request is not well formed or it is
+           empty.
+         * Returns 404 if there is no timestamp with given value
+         * Returns 415 if the input is not JSON.
+         * Returns 500 if the database cannot be modified
+        '''
+
+        #eli napataaan urin perästä json ja puretaan se parametreiksi: timestamp ja value, ja passataan deebeelle
+        if not g.con.contains_timestamp(timestamp):
+            return create_error_response(404, "timestamp not found", "there is no temperature value with given timsstamp %s" %timestamp)
+
+        if JSON != request.headers.get("Content-Type",""):
+            return create_error_response(415, "UnsupportedMediaType",
+                                         "Use a JSON compatible format")
+        request_body = request.get_json(force=True)
+
+        try:
+            value = request_body["temperature"]
+        except KeyError:
+            return create_error_response(400, "Wrong request format", "Be sure you include new temperature value")
+
+        else:
+            if not g.con.modify_temperature(timestamp, value):
+                return create_error_response(500, "Internal error", "Temperature information for %s cannot be updated" % value)
+            return "", 204
+
+
 class Speed(Resource):
     #@app.route('/wind/api/speed/', methods=['GET'])
     #@app.route('/wind/api/speed/<timestamp>', methods=['GET'])
@@ -198,24 +231,6 @@ class Speed(Resource):
                   resource_url=request.path,
                   resource_id=timestamp)
         return jsonify(speed_db)
-
-    def put(self, timestamp):
-        args = request.args
-        timestamp = args['timestamp']
-        speed = args['speed']
-        speed_db = g.con.add_speed(timestamp, speed)
-        return jsonify(speed_db)
-
-
-    '''
-    def delete(self, timestamp):
-        if g.con.delete_speed(timestamp):
-            return "", 204
-        else:
-            return create_error_response(404, "Unknown timestamp",
-                                         "There is no a speed value with timestamp %s"
-                                         % timestamp)
-    '''
 
 
 #ERROR HANDLERS Borrowed slightly from exercises...
@@ -278,8 +293,6 @@ def close_connection(exc):
 
 #routes: should get class as a first param instead of method?
 
-#api.add_resource(Speeds, "/wind/api/speeds/", endpoint="speeds")
-#api.add_resource(get_speed, "/wind/api/speed:timestamp", endpoint="speed")
 api.add_resource(Speeds, '/wind/api/speeds/', endpoint='speeds')
 api.add_resource(Batteries, '/wind/api/batteries/')
 api.add_resource(Temperatures, '/wind/api/temperatures/')

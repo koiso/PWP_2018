@@ -218,25 +218,29 @@ class Connection(object):
                 return False
 
 
-    def add_speed(self, timestamp, speed):
-        query1 = 'SELECT date FROM WIND_DATA where timestamp = ?'
-        query2 = 'INSERT INTO WIND_DATA (timestamp, speed)) VALUES (?,?)'
+    def modify_temperature(self, timestamp, value):
+        '''
+        modifies the temperature value on timestamp with value given
+        :param timestamp:
+        :param value:
+        :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
+        '''
 
+        query = 'UPDATE WIND_DATA SET temperature = ? WHERE date = ?'
+
+        #check if temperature already deleted
+        qvalue = (value, timestamp,)
+
+        #modify value
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
-        qvalue = (timestamp,)
-        cur.execute(query1, qvalue)
-
-        row = cur.fetchone()
-
-        if row is None:
-            qvalue = (timestamp, speed)
-            cur.execute(query2, qvalue)
+        try:
+            cur.execute(query, qvalue)
             self.con.commit()
-            return speed
-        else:
-            return None
-
+            return True
+        except sqlite3.Error as e:
+            print("Error %s:" % (e.args[0]))
+            return False
 
 
     def get_speeds(self, start=-1, end=-1):
