@@ -203,6 +203,9 @@ function delete_message(apiurl){
         //are required.
     //TODO 4
        //Implemente the handlers following the instructions from the function documentation.
+	   
+	   
+	   
     return;
 }
 
@@ -331,6 +334,7 @@ function get_message(apiurl){
     //TODO 4: Implement the handlers for done() and fail() responses 
     
 function messages_history(apiurl){
+	//*****
     return;
 }
 
@@ -1056,7 +1060,16 @@ function handleGetUser(event) {
     // and call the function get_user(url) to make the corresponding 
     // HTTP call to the RESTful API. You can extract an HTML attribute using the
     // attr("attribute_name") method from JQuery.
-    
+	
+	event.preventDefault();
+	//$("user_list").children().removeClass("active");
+	$(this).children().removeClass("active");
+	prepareUserDataVisualization();
+	
+	var u_url = $(event.target).attr("href");
+	console.log("user address: " + u_url);
+	get_user(u_url);
+	
     return;
 }
 
@@ -1075,7 +1088,11 @@ function handleDeleteMessage(event){
     //  Call the method delete_message(messageurl).
     //  Check handleDeleteUser for more hints.
     //  Remember to return false in order to avoid default action
-    return;
+	
+	var res_url = $(this).closest("form").attr("action");
+    delete_message(res_url);
+	
+    return false;
 }
 
 /**** END BUTTON HANDLERS ****/
@@ -1093,10 +1110,28 @@ $(function(){
     //
     // Check http://api.jquery.com/on/ for more help.
 
+	$("#addUserButton").on("click", function() {
+		console.log("addUserButton Click handler");
+		handleShowUserForm();
+	});
+	
+	$("#deleteUser").on("click", function() {
+		console.log("deleteUser click handler");
+		handleDeleteUser();
+	});
+	
+	$("#editUserRestricted").on("click", function() {
+		console.log("editUserRestricted click handler");
+		handleEditUserRestricted();
+	});
+	
+	$("#createUser").on("click", function() {
+		console.log("creaUser click handler");
+		handleCreateUser();
+	});
+	
+	
 
-
-
-    
     //TODO 1: Add corresponding click handlers for .deleteMessage button and
     // #user_list li a anchors. Since these elements are generated dynamically
     // (they are not in the initial HTML code), you must use delegated events.
@@ -1107,7 +1142,16 @@ $(function(){
     // #user_list li a => handleGetUser
     // More information for direct and delegated events from http://api.jquery.com/on/
    
-
+	
+	$("#messages_list").on("click", function(event) {
+		console.log("deleteMessage event handler");
+		handleDeleteMessage(event);
+	});
+	
+	$("#user_list").on("click", function(event) {	
+		console.log("user list event handler");
+		handleGetUser(event);
+	});
 
    
     //Retrieve list of users from the server

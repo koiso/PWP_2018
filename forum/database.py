@@ -499,6 +499,9 @@ class Connection(object):
         '''
         return {'registrationdate': row['regDate'], 'nickname': row['nickname']}
 
+
+
+
     #API ITSELF
     #Message Table API.
     def get_message(self, messageid):
