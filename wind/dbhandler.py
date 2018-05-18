@@ -227,8 +227,6 @@ class Connection(object):
         '''
 
         query = 'UPDATE WIND_DATA SET temperature = ? WHERE date = ?'
-
-        #check if temperature already deleted
         qvalue = (value, timestamp,)
 
         #modify value
@@ -241,6 +239,41 @@ class Connection(object):
         except sqlite3.Error as e:
             print("Error %s:" % (e.args[0]))
             return False
+
+
+    def add_temperature(self, timestamp, value):
+        '''
+        Adds the temperature value with given timestamp
+        :param timestamp:
+        :param value:
+        :return: False if not added. dict with timestamp and value if added
+        '''
+
+        # if there is a timestamp: temperature value is checked to be null already in method call
+        # add value to temperature with given timestamp
+        # created this for usability, we want to add value even if there is a timestamp already (RESTISH?)
+        test = self.contains_timestamp(timestamp)
+        if test:
+            returnable_boolean = self.modify_temperature(timestamp, value)
+            return returnable_boolean
+
+        # if there is no timestamp create new entry
+        else:
+            query = 'INSERT INTO WIND_DATA (date, temperature) VALUES(?,?)'
+            qvalue = (timestamp, value,)
+
+            #Add new entry
+            self.con.row_factory = sqlite3.Row
+            cur = self.con.cursor()
+            try:
+                cur.execute(query, qvalue)
+                self.con.commit()
+                return {"timestamp": timestamp, "temperature": value}
+            except sqlite3.Error as e:
+                print("Error %s:" % (e.args[0]))
+                return False
+
+
 
 
     def get_speeds(self, start=-1, end=-1):
@@ -399,6 +432,39 @@ class Connection(object):
         except sqlite3.Error as e:
             print("Error %s:" % (e.args[0]))
             return False
+
+
+    def add_humidity(self, timestamp, value):
+        '''
+        Adds the humidity value with given timestamp
+        :param timestamp:
+        :param value:
+        :return: False if not added. dict with timestamp and value if added
+        '''
+
+        # if there is a timestamp: humidity value is checked to be null already in method call
+        # add value to humidity with given timestamp
+        # created this for usability, we want to add value even if there is a timestamp already (RESTISH?)
+        test = self.contains_timestamp(timestamp)
+        if test:
+            returnable_boolean = self.modify_humidity(timestamp, value)
+            return returnable_boolean
+
+        # if there is no timestamp create new entry
+        else:
+            query = 'INSERT INTO WIND_DATA (date, humidity) VALUES(?,?)'
+            qvalue = (timestamp, value,)
+
+            #Add new entry
+            self.con.row_factory = sqlite3.Row
+            cur = self.con.cursor()
+            try:
+                cur.execute(query, qvalue)
+                self.con.commit()
+                return {"timestamp": timestamp, "humidity": value}
+            except sqlite3.Error as e:
+                print("Error %s:" % (e.args[0]))
+                return False
 
 
     def get_batteries(self, start=-1, end=-1):
@@ -658,12 +724,12 @@ class Connection(object):
 
     #STUFF
     def contains_timestamp(self, timestamp):
-        query1 = 'SELECT * FROM WIND_DATA WHERE date = ?'
+        query = 'SELECT * FROM WIND_DATA WHERE date = ?'
         #check if there is timestamp in DB
         self.con.row_factory = sqlite3.Row
         cur = self.con.cursor()
         qvalue = (timestamp,)
-        cur.execute(query1, qvalue,)
+        cur.execute(query, qvalue,)
         row = cur.fetchone()
 
         #if timestamp does not exist
@@ -672,10 +738,22 @@ class Connection(object):
         else:
             return True
 
-    '''
-        TODO: 
-        create  methods for modifying (put) and create (post)
-            
+    def contains_value(self, timestamp, column):
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+        #NO plaeholders for tables or column names - WTF! roundabout -->
+        cur.execute('SELECT {} FROM WIND_DATA WHERE date = {}'.format(column, timestamp))
+        row = cur.fetchone()
+        #if value in column does not exist
+        #print(row[0])
+        if row is None:
+            return False
+        elif row[0] is "" or row[0] is None:
+            return False
+        else:
+            return True
+
+    '''          
         
 #this query might need correction...Perkels DELETING WHOLE ROW
 query = 'DELETE FROM WIND_DATA WHERE date = ?'

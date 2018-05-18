@@ -146,6 +146,52 @@ class Humidity(Resource):
             return "", 204
 
 
+    def post(self, timestamp):
+        '''
+        Adds a a NEW humidity and timestamp. 
+        If timestamp exists, but no humidity value, update instead.
+
+        REQUEST ENTITY BODY:
+         * Media type: JSON:
+
+        RESPONSE STATUS CODE:
+         * Returns 201 + the url of the new resource in the Location header
+         * Returns 200 if the resource was updated, not created --> means that there was timestamp already, but no value
+         * Returns 400 if the value is not well formed or is empty.
+         * Returns 409 if there is already humidity value in with given timestamp.
+         * Returns 415 if the format of the response is not json
+         * Returns 500 if the message could not be added to database.
+        '''
+
+        #if there is already value on given timestamp
+        column = 'humidity'
+        if g.con.contains_value(timestamp, column):
+            return create_error_response(409, "Humidity value exists", "There is already humidity value with given timestamp %s" %timestamp)
+
+        if JSON != request.headers.get("Content-Type", ""):
+            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format")
+        request_body = request.get_json(force=True)
+
+        try:
+            value = request_body["humidity"]
+        except KeyError:
+            return create_error_response(400, "Wrong request format", "Be sure you include new humidity value")
+
+        else:
+            dump = g.con.add_humidity(timestamp, value)
+            if dump is None:
+                return create_error_response(500, "Internal error", "Humidity information for %s cannot be updated" % value)
+
+            #if value was only modified (because timestamp was already there)
+            elif dump is True:
+                return "", 200
+            else:
+                #The Location header should have an URL that points to the new resource
+                # and you can return an entity with the details also.
+                #return Response(json.dumps(dump), 201, mimetype=JSON)
+                return Response(status=201, headers={"URL": api.url_for(Humidity, timestamp=timestamp)})
+
+
 class Temperature(Resource):
     def delete(self, timestamp):
         if g.con.delete_temperature(timestamp):
@@ -163,6 +209,7 @@ class Temperature(Resource):
         #return jsonify(temperature_db)
         return Response(json.dumps(temperature_db), 200, mimetype=JSON)
 
+    #edit old value
     def put(self, timestamp):
         '''
         REQUEST TEMPERATURE VALUE:
@@ -177,7 +224,7 @@ class Temperature(Resource):
          * Returns 500 if the database cannot be modified
         '''
 
-        #eli napataaan urin perästä json ja puretaan se parametreiksi: timestamp ja value, ja passataan deebeelle
+        #Check, that timestamp is there, check that format is correct, get value from url (json), pass to db
         if not g.con.contains_timestamp(timestamp):
             return create_error_response(404, "timestamp not found", "there is no temperature value with given timsstamp %s" %timestamp)
 
@@ -194,6 +241,52 @@ class Temperature(Resource):
             if not g.con.modify_temperature(timestamp, value):
                 return create_error_response(500, "Internal error", "Temperature information for %s cannot be updated" % value)
             return "", 204
+
+
+    def post(self, timestamp):
+        '''
+        Adds a a NEW temperature and timestamp. 
+        If timestamp exists, but no temperature value, update instead.
+
+        REQUEST ENTITY BODY:
+         * Media type: JSON:
+
+        RESPONSE STATUS CODE:
+         * Returns 201 + the url of the new resource in the Location header
+         * Returns 200 if the resource was updated, not created --> means that there was timestamp already, but no value
+         * Returns 400 if the value is not well formed or is empty.
+         * Returns 409 if there is already temperature value in with given timestamp.
+         * Returns 415 if the format of the response is not json
+         * Returns 500 if the message could not be added to database.
+        '''
+
+        #if there is already value on given timestamp
+        column = 'temperature'
+        if g.con.contains_value(timestamp, column):
+            return create_error_response(409, "temperature value exists", "There is already temperature value with given timestamp %s" %timestamp)
+
+        if JSON != request.headers.get("Content-Type", ""):
+            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format")
+        request_body = request.get_json(force=True)
+
+        try:
+            value = request_body["temperature"]
+        except KeyError:
+            return create_error_response(400, "Wrong request format", "Be sure you include new temperature value")
+
+        else:
+            dump = g.con.add_temperature(timestamp, value)
+            if dump is None:
+                return create_error_response(500, "Internal error", "temperature information for %s cannot be updated" % value)
+
+            #if value was only modified (because timestamp was already there)
+            elif dump is True:
+                return "", 200
+            else:
+                #The Location header should have an URL that points to the new resource
+                # and you can return an entity with the details also.
+                #return Response(json.dumps(dump), 201, mimetype=JSON)
+                return Response(status=201, headers={"URL": api.url_for(temperature, timestamp=timestamp)})
 
 
 class Speed(Resource):
