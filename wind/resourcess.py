@@ -39,56 +39,41 @@ class Speeds(Resource):
     Implements resource speeds
     '''
 
-    #@app.route('/wind/api/speeds/', methods=['GET'])
     def get(self):
         '''
         get all speeds
 
         INPUT params:
-            optional start, end.
 
         '''
         #extract speeds from db
         speeds_db = g.con.get_speeds()
-
         #prettier output with jsonify, BOTH GIVES HEADERS STILL, MAYBE NOT A PROBLEM
         #return jsonify(speeds_db)
-
         return Response(json.dumps(speeds_db), 200, mimetype=JSON)
 
 
 class Batteries(Resource):
-    #@app.route('/wind/api/batteries/', methods=['GET'])
     def get(self):
         batteries_db = g.con.get_batteries()
-        #make_response
-        #return jsonify(batteries_db)
         return Response(json.dumps(batteries_db), 200, mimetype=JSON)
 
 
 class Directions(Resource):
-    #@app.route('/wind/api/directions/', methods=['GET'])
     def get(self):
         directions_db = g.con.get_directions()
-        #make_response
-        #return jsonify(directions_db)
         return Response(json.dumps(directions_db), 200, mimetype=JSON)
 
 
 class Temperatures(Resource):
-    #@app.route('/wind/api/temperatures/', methods=['GET'])
     def get(self):
         temperatures_db = g.con.get_temperatures()
-        #make_response
-        #return jsonify(temperatures_db)
         return Response(json.dumps(temperatures_db), 200, mimetype=JSON)
 
 
 class Humidities(Resource):
     def get(self):
         humidities_db = g.con.get_humidities()
-        #make_response
-        #return jsonify(humidities_db)
         return Response(json.dumps(humidities_db), 200, mimetype=JSON)
 
 
@@ -109,7 +94,7 @@ class Humidity(Resource):
                   resource_type="Humidity",
                   resource_url=request.path,
                   resource_id=timestamp)
-        #return jsonify(humidity_db)
+
         return Response(json.dumps(humidity_db), 200, mimetype=JSON)
 
     #modifies the humidity value with @ timestamp
@@ -216,7 +201,7 @@ class Temperature(Resource):
         * Media type: JSON
 
         OUTPUT:
-         * Returns 204 if the message is modified correctly
+         * Returns 204 if the temperature is modified correctly
          * Returns 400 if the request is not well formed or it is
            empty.
          * Returns 404 if there is no timestamp with given value
@@ -290,13 +275,10 @@ class Temperature(Resource):
 
 
 class Speed(Resource):
-    #@app.route('/wind/api/speed/<timestamp>', methods=['GET'])
     def get(self, timestamp):
         '''
         :param timestamp:
         '''
-        #time = request.params('timestamp')
-        #time = request.args.get('timestamp')
 
         speed_db = g.con.get_speed(timestamp)
 
@@ -305,7 +287,7 @@ class Speed(Resource):
                   resource_type="Speed",
                   resource_url=request.path,
                   resource_id=timestamp)
-        #return jsonify(speed_db)
+
         return Response(json.dumps(speed_db), 200, mimetype=JSON)
 
 
@@ -319,7 +301,7 @@ def create_error_response(status_code, title, message):
     """
 
     resource_url = None
-    #We need to access the context in order to access the request.path
+    #We need the context in order to access the request.path
     ctx = _request_ctx_stack.top
     if ctx is not None:
         resource_url = request.path

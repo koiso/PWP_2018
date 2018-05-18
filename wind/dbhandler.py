@@ -1,12 +1,12 @@
-#Provides the database API to access wind data
+# Provides the database API to access wind data
 
 from datetime import datetime
 import time, sqlite3, re, os
 
-#Default path for db
+# Default path for db
 DEFAULT_DB_PATH = '../db/PWP_DATA.db'
 
-
+# some parts borrowe from exercises
 class Engine(object):
     '''
     Abstraction of the database.
@@ -132,9 +132,9 @@ class Connection(object):
         '''
         Extracts speed from db
         :param timestamp:
-            format yyyymmdd hh:mm ***
+            format integer value
         :return: A dict with the format provided in
-            :py:meth:`_create_speed_object` or None if speed with given timestamp does not exist or is 9999.
+            :py:meth:`_create_speed_object` or None if speed with given timestamp does not exist
 
         '''
 
