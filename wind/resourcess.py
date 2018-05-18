@@ -12,13 +12,13 @@ import dbhandler
 JSON = "application/json"
 
 #for testing
-app = Flask(__name__)
+#app = Flask(__name__)
+app = Flask(__name__, static_folder="static", static_url_path="/.")
+app.debug = True
 app.config.update({"Engine": dbhandler.Engine()})
+
+#atart api
 api = Api(app)
-#@app.route('/')
-#def index():
-#    return "Hello, World!"
-#
 
 #for later use
 '''
@@ -279,7 +279,7 @@ def close_connection(exc):
 
 api.add_resource(Speeds, '/wind/api/speeds/', endpoint='speeds')
 api.add_resource(Batteries, '/wind/api/batteries/', endpoint='batteries')
-api.add_resource(Temperatures, '/wind/api/temperatures/', endpoint='temperature')
+api.add_resource(Temperatures, '/wind/api/temperatures/', endpoint='temperatures')
 api.add_resource(Directions, '/wind/api/directions/', endpoint='directions')
 api.add_resource(Humidities, '/wind/api/humidities/', endpoint='humidities')
 

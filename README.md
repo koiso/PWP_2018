@@ -10,9 +10,9 @@ pip install flask-restful
 RUNNING THE SERVER
 ------------------
 
-In the project root folder:
+In the project wind folder:
 
-python main.py
+python resources.py
 
 
 
