@@ -271,7 +271,7 @@ class Temperature(Resource):
                 #The Location header should have an URL that points to the new resource
                 # and you can return an entity with the details also.
                 #return Response(json.dumps(dump), 201, mimetype=JSON)
-                return Response(status=201, headers={"URL": api.url_for(temperature, timestamp=timestamp)})
+                return Response(status=201, headers={"URL": api.url_for(Temperature, timestamp=timestamp)})
 
 
 class Speed(Resource):

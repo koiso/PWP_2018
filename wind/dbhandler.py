@@ -6,7 +6,7 @@ import time, sqlite3, re, os
 # Default path for db
 DEFAULT_DB_PATH = '../db/PWP_DATA.db'
 
-# some parts borrowe from exercises
+# some parts borrowed from exercises
 class Engine(object):
     '''
     Abstraction of the database.
@@ -747,10 +747,13 @@ class Connection(object):
         #if value in column does not exist
         #print(row[0])
         if row is None:
+            #print("1")
             return False
         elif row[0] is "" or row[0] is None:
+            #print(2)
             return False
         else:
+            #print(3)
             return True
 
     '''          
