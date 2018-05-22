@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 
 from urllib.parse import unquote
@@ -64,7 +65,6 @@ class Speeds(Resource):
         '''
         #extract speeds from db
         speeds_db = g.con.get_speeds()
-        #prettier output with jsonify, BOTH GIVES HEADERS STILL, MAYBE NOT A PROBLEM
         #return jsonify(speeds_db)
         return Response(json.dumps(speeds_db), 200, mimetype=JSON)
 
