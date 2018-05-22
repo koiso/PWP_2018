@@ -9,7 +9,10 @@ from werkzeug.exceptions import NotFound,  UnsupportedMediaType
 import dbhandler
 
 #Constants for formats
+#FOR HAL
+#JSON = "application/hal+json"
 JSON = "application/json"
+
 
 #for testing
 #app = Flask(__name__)
@@ -34,6 +37,19 @@ api = Api(app)
 '''
 
 #Define the resources
+class Devices(Resource):
+    '''
+    implements resource devices
+    '''
+    def get(self):
+        '''
+        List all devices available
+        '''
+
+        devices_db = g.con.get_devices()
+        return Response(json.dumps(devices_db), 200, mimetype=JSON)
+
+
 class Speeds(Resource):
     '''
     Implements resource speeds
