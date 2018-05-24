@@ -33,7 +33,7 @@ app.response_class = Response
 api = Api(app)
 
 
-#for later use
+#for later use maybe...
 '''
 #Define the application and the api
 app = Flask(__name__, static_folder="static", static_url_path="/.")
@@ -586,7 +586,7 @@ class Temperature(Resource):
                 return Response(status=201, headers={"URL": api.url_for(Temperature, id=id, timestamp=timestamp)})
 
 
-#ERROR HANDLERS Borrowed slightly from exercises...
+# ERROR HANDLERS Borrowed slightly from exercises...all errors go through this method --> response is application/hal+json
 def create_error_response(status_code, title, message, resource_type=None):
     """
     : param integer status_code: The HTTP status code of the response
@@ -596,12 +596,12 @@ def create_error_response(status_code, title, message, resource_type=None):
     """
 
     resource_url = None
-    #We need the context in order to access the request.path
+    # We need the context in order to access the request.path
     ctx = _request_ctx_stack.top
     if ctx is not None:
         resource_url = request.path
 
-    #Muotoillaan errorin palautus ja pistellään responsensa
+    # Muotoillaan errorin palautus ja pistellään responsensa
     dump = {"resource_url": resource_url, "resource_type": resource_type, "message": title, "info": message}
     return Response(json.dumps(dump), status_code, mimetype=JSONHAL)
 
@@ -629,7 +629,7 @@ def connect_db():
 
     g.con = app.config["Engine"].connect()
 
-#HOOKS
+# HOOKS
 @app.teardown_request
 def close_connection(exc):
     """
@@ -642,7 +642,7 @@ def close_connection(exc):
         g.con.close()
 
 
-#routes for resources
+# routes for resources
 
 # collections
 api.add_resource(Speeds, '/wind/api/device/<id>/speeds/', endpoint='speeds')

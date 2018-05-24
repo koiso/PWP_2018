@@ -772,24 +772,6 @@ class Connection(object):
             #print(3)
             return True
 
-    '''          
-        
-#this query might need correction...Perkels DELETING WHOLE ROW
-query = 'DELETE FROM WIND_DATA WHERE date = ?'
-self.con.row_factory = sqlite3.Row
-cur = self.con.cursor()
-qvalue = (timestamp,)
-try:
-    cur.execute(query, qvalue,)
-    self.con.commit()
-except sqlite3.Error as e:
-    print("Error %s:" % (e.args[0]))
-if cur.rowcount < 1:
-    return False
-else:
-    return True
-        
-    '''
 
 
 
