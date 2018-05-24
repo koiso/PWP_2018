@@ -66,7 +66,7 @@ class Device(Resource):
         #create collection of links
         links = Collection(
             Self(),
-            Link('collection', '/wind/api/devices/'),
+            Link('list', '/wind/api/devices/'),
             Link('data:speeds-all', request.path + '/speeds/')
         )
 
@@ -74,8 +74,8 @@ class Device(Resource):
         l = links.to_dict()
 
         #combine links and speed to one dict to be returned in response
-        #dump = dict(list(l.items()) + list(device_db.items()))
-        dump = dict(list(device_db.items()) + list(l.items()))
+        #dump = dict(list(device_db.items()) + list(l.items()))
+        dump = dict(list(l.items()) + list(device_db.items()))
 
         #return Response
         return Response(json.dumps(dump), 200, mimetype=JSONHAL)
@@ -100,7 +100,7 @@ class Devices(Resource):
         # create collection of links
         links = Collection(
             Self(),
-            Link('device', '/wind/api/device/<id>')
+            Link('device', '/wind/api/device/{id}')
         )
 
         # links to dict
@@ -133,7 +133,7 @@ class Speed(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('collection', '/wind/api/device/' + id + '/speeds/'),
+            Link('list', '/wind/api/device/' + id + '/speeds/'),
             Link('temperatures-all', '/wind/api/device/' + id + '/temperatures/')
         )
 
@@ -167,7 +167,7 @@ class Battery(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('collection', '/wind/api/device/' + id + '/batteries/')
+            Link('list', '/wind/api/device/' + id + '/batteries/')
             # last one, no links to other resources except device and collection
         )
 
@@ -201,7 +201,7 @@ class Direction(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('collection', '/wind/api/device/' + id + '/directions/'),
+            Link('list', '/wind/api/device/' + id + '/directions/'),
             Link('all-batteries', '/wind/api/device/' + id + '/batteries/')
         )
 
@@ -236,7 +236,7 @@ class Speeds(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('speed', '/wind/api/device/' + id + '/speed/<timestamp>')
+            Link('speed', '/wind/api/device/' + id + '/speed/{timestamp}')
         )
 
         # links to dict
@@ -267,7 +267,7 @@ class Batteries(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('battery', '/wind/api/device/' + id + '/battery/<timestamp>')
+            Link('battery', '/wind/api/device/' + id + '/battery/{timestamp}')
         )
 
         # links to dict
@@ -293,7 +293,7 @@ class Directions(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('direction', '/wind/api/device/' + id + '/direction/<timestamp>')
+            Link('direction', '/wind/api/device/' + id + '/direction/{timestamp}')
         )
 
         # links to dict
@@ -319,7 +319,7 @@ class Temperatures(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('temperature', '/wind/api/device/' + id + '/temperature/<timestamp>')
+            Link('temperature', '/wind/api/device/' + id + '/temperature/{timestamp}')
         )
 
         # links to dict
@@ -345,7 +345,7 @@ class Humidities(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('humidity', '/wind/api/device/' + id + '/humidity/<timestamp>')
+            Link('humidity', '/wind/api/device/' + id + '/humidity/{timestamp}')
         )
 
         # links to dict
@@ -379,7 +379,7 @@ class Humidity(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('collection', '/wind/api/humidities/'),
+            Link('list', '/wind/api/humidities/'),
             Link('directions-all', '/wind/api/device/' + id + '/directions/')
         )
 
@@ -491,7 +491,7 @@ class Temperature(Resource):
         links = Collection(
             Self(),
             Link('device', '/wind/api/device/' + id + '/'),
-            Link('collection', '/wind/api/device/' + id + '/temperatures/'),
+            Link('list', '/wind/api/device/' + id + '/temperatures/'),
             Link('humidities-all', '/wind/api/device/' + id + '/humidities/')
         )
 
