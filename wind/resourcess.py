@@ -3,16 +3,10 @@ import json
 
 from urllib.parse import unquote
 
-#from flask import Flask, request, Response, g, _request_ctx_stack, redirect, send_from_directory, jsonify, make_response
 from flask import Flask, request, g, _request_ctx_stack, redirect, send_from_directory, jsonify, make_response
 from flask_restful import Resource, Api, abort
-# from flask_restful import abort
-# change the api to support HAL
-# from flask_restful_hal import Api, Embedded, Link, Resource
-#moar testing flask-hal
 
 from flask_hal import HALResponse as Response
-#from flask_hal import HAL
 from flask_hal.link import Collection, Link, Self
 
 from werkzeug.exceptions import NotFound,  UnsupportedMediaType
@@ -52,7 +46,6 @@ app.debug = True
 api = Api(app)
 '''
 
-#LET'S HOPE WE DON'T NEED THIS
 #Define the resources
 class Device(Resource):
     '''
@@ -60,16 +53,15 @@ class Device(Resource):
     '''
     def get(self, id):
         '''
-        Get device with give id from db
+        Get device with given id from db
+        :param id
         '''
 
         device_db = g.con.get_device(id)
 
         if not device_db:
-            abort(404, message="There is no device with id %s" % id,
-                  resource_type="Device",
-                  resource_url=request.path,
-                  resource_id=id)
+            return create_error_response(404, "No device found",
+                                     'There is no device info on given device id %s' % id, 'Device')
 
         #create collection of links
         links = Collection(
@@ -81,13 +73,9 @@ class Device(Resource):
         #links to dict
         l = links.to_dict()
 
-        #combine links and speed to one dict
+        #combine links and speed to one dict to be returned in response
         #dump = dict(list(l.items()) + list(device_db.items()))
         dump = dict(list(device_db.items()) + list(l.items()))
-
-        print(l)
-        print(device_db)
-        print(dump)
 
         #return Response
         return Response(json.dumps(dump), 200, mimetype=JSONHAL)
@@ -105,6 +93,10 @@ class Devices(Resource):
 
         devices_db = g.con.get_devices()
 
+        if not devices_db:
+            return create_error_response(404, "No devices found",
+                                     'There is no devices in DB', 'Devices')
+
         # create collection of links
         links = Collection(
             Self(),
@@ -114,7 +106,7 @@ class Devices(Resource):
         # links to dict
         l = links.to_dict()
 
-        # combine links and speed to one dict
+        # combine links and speed to one dict and add items where the actual values are
         dump = l
         dump.update({'items': devices_db})
 
@@ -128,27 +120,20 @@ class Speed(Resource):
     '''
     def get(self, id, timestamp):
         '''
-        :param timestamp:
+        :param id, timestamp:
         '''
 
         speed_db = g.con.get_speed(id, timestamp)
 
         if not speed_db:
-
-            '''
-            return create_error_response(404, "Unknown timestamp",
-                                         "There is no speed data with timestamp %s" % timestamp + " on given device id")
-            '''
-
-            abort(404, message="There is no speed data with timestamp %s" % timestamp + " on given device id",
-                  resource_type="Speed",
-                  resource_url=request.path,
-                  resource_id=timestamp)
+             return create_error_response(404, "No speed found",
+                                'There is no speed data on device id %s with timestamp %s' % (id, timestamp), 'Speed')
 
         #create collection of links
         links = Collection(
             Self(),
-            Link('list', '/wind/api/device/' + id + '/speeds/'),
+            Link('device', '/wind/api/device/' + id + '/'),
+            Link('collection', '/wind/api/device/' + id + '/speeds/'),
             Link('temperatures-all', '/wind/api/device/' + id + '/temperatures/')
         )
 
@@ -168,24 +153,22 @@ class Battery(Resource):
     '''
     def get(self, id, timestamp):
         '''
-        :param timestamp:
+        :param id, timestamp:
         '''
 
         battery_db = g.con.get_battery(id, timestamp)
 
         if not battery_db:
-            abort(404, message="There is no battery data with timestamp %s" % timestamp + " on given device id",
-                  resource_type="Battery",
-                  resource_url=request.path,
-                  resource_id=timestamp)
+            return create_error_response(404, "No battery data found",
+                                         'There is no battery data on device id %s with timestamp %s' % (id, timestamp),
+                                         'Battery')
 
         #create collection of links
         links = Collection(
             Self(),
-            Link('list', '/wind/api/device/' + id + '/batteries/')
-
-            #mihis sitte, viimeinen...
-
+            Link('device', '/wind/api/device/' + id + '/'),
+            Link('collection', '/wind/api/device/' + id + '/batteries/')
+            # last one, no links to other resources except device and collection
         )
 
         #links to dict
@@ -204,24 +187,23 @@ class Direction(Resource):
     '''
     def get(self, id, timestamp):
         '''
-        :param timestamp:
+        :param id, timestamp:
         '''
 
         direction_db = g.con.get_direction(id, timestamp)
 
         if not direction_db:
-            abort(404, message="There is no direction data with timestamp %s" % timestamp + " on given device id",
-                  resource_type="Direction",
-                  resource_url=request.path,
-                  resource_id=timestamp)
+            return create_error_response(404, "No direction data found",
+                                         'There is no direction data on device id %s with timestamp %s' % (id, timestamp),
+                                         'Direction')
 
         #create collection of links
         links = Collection(
             Self(),
-            Link('list', '/wind/api/device/' + id + '/directions/'),
+            Link('device', '/wind/api/device/' + id + '/'),
+            Link('collection', '/wind/api/device/' + id + '/directions/'),
             Link('all-batteries', '/wind/api/device/' + id + '/batteries/')
         )
-
 
         #links to dict
         l = links.to_dict()
@@ -241,21 +223,19 @@ class Speeds(Resource):
     def get(self, id):
         '''
         get all speeds
-
-        INPUT params:
+        params: id
 
         '''
         #extract speeds from db
         speeds_db = g.con.get_speeds(id)
         if not speeds_db:
-            abort(404, message="There is no speed data on given device id %s" % id,
-                  resource_type="Speeds",
-                  resource_url=request.path,
-                  resource_id=id)
+            return create_error_response(404, "No speeds found",
+                                     'There is no speeds data on given device id %s' % id, 'Speeds')
 
         # create collection of links
         links = Collection(
             Self(),
+            Link('device', '/wind/api/device/' + id + '/'),
             Link('speed', '/wind/api/device/' + id + '/speed/<timestamp>')
         )
 
@@ -272,17 +252,21 @@ class Speeds(Resource):
 
 class Batteries(Resource):
     def get(self, id):
+        '''
+        get all battery values on device
+        :param id:
+        '''
+
         batteries_db = g.con.get_batteries(id)
 
         if not batteries_db:
-            abort(404, message="There is no battery data on given device id %s" % id,
-                  resource_type="Batteries",
-                  resource_url=request.path,
-                  resource_id=id)
+            return create_error_response(404, "No batteries found",
+                                     'There is no batteries data on given device id %s' % id, 'Batteries')
 
         # create collection of links
         links = Collection(
             Self(),
+            Link('device', '/wind/api/device/' + id + '/'),
             Link('battery', '/wind/api/device/' + id + '/battery/<timestamp>')
         )
 
@@ -302,14 +286,13 @@ class Directions(Resource):
         directions_db = g.con.get_directions(id)
 
         if not directions_db:
-            abort(404, message="There is no direction data on given device id %s" % id,
-                  resource_type="Directions",
-                  resource_url=request.path,
-                  resource_id=id)
+            return create_error_response(404, "No directions found",
+                                     'There is no directions data on given device id %s' % id, 'Diretions')
 
         # create collection of links
         links = Collection(
             Self(),
+            Link('device', '/wind/api/device/' + id + '/'),
             Link('direction', '/wind/api/device/' + id + '/direction/<timestamp>')
         )
 
@@ -329,14 +312,13 @@ class Temperatures(Resource):
         temperatures_db = g.con.get_temperatures(id)
 
         if not temperatures_db:
-            abort(404, message="There is no temperature data on given device id %s" % id,
-                  resource_type="Temperatures",
-                  resource_url=request.path,
-                  resource_id=id)
+            return create_error_response(404, "No temperatures found",
+                                         'There is no temperatures data on given device id %s' % id, 'Temperatures')
 
         # create collection of links
         links = Collection(
             Self(),
+            Link('device', '/wind/api/device/' + id + '/'),
             Link('temperature', '/wind/api/device/' + id + '/temperature/<timestamp>')
         )
 
@@ -356,14 +338,13 @@ class Humidities(Resource):
         humidities_db = g.con.get_humidities(id)
 
         if not humidities_db:
-            abort(404, message="There is no humidity data on given device id %s" % id,
-                  resource_type="Humidities",
-                  resource_url=request.path,
-                  resource_id=id)
+            return create_error_response(404, "No humidities found",
+                                     'There is no humidities data on given device id %s' % id, 'Humidities')
 
         # create collection of links
         links = Collection(
             Self(),
+            Link('device', '/wind/api/device/' + id + '/'),
             Link('humidity', '/wind/api/device/' + id + '/humidity/<timestamp>')
         )
 
@@ -384,22 +365,21 @@ class Humidity(Resource):
         if g.con.delete_humidity(id, timestamp):
             return "", 204
         else:
-            return create_error_response(404, "Unknown timestamp", "There is no a humidity value with timestamp %s" % timestamp + " on given device id")
+            return create_error_response(404, "Unknown timestamp", "There is no a humidity value with timestamp %s" % timestamp + " on given device id", 'Humidity')
 
     #get humidity value
     def get(self, id, timestamp):
         humidity_db = g.con.get_humidity(id, timestamp)
         if not humidity_db:
-
-            abort(404, message="There is no humidity data with timestamp %s" % timestamp + " on given device id",
-                  resource_type="Humidity",
-                  resource_url=request.path,
-                  resource_id=timestamp)
+            return create_error_response(404, "No humidity found",
+                                         'There is no humidity data on device id %s with timestamp %s' % (id, timestamp),
+                                         'Humidity')
 
         #create collection of links
         links = Collection(
             Self(),
-            Link('list', '/wind/api/humidities/'),
+            Link('device', '/wind/api/device/' + id + '/'),
+            Link('collection', '/wind/api/humidities/'),
             Link('directions-all', '/wind/api/device/' + id + '/directions/')
         )
 
@@ -429,20 +409,20 @@ class Humidity(Resource):
 
         #eli napataaan urin perästä json ja puretaan se parametreiksi: timestamp ja value, ja passataan deebeelle
         if not g.con.contains_timestamp(id, timestamp):
-            return create_error_response(404, "timestamp not found", "there is no humidity value with given timsstamp %s" %timestamp + " on given device id")
+            return create_error_response(404, "timestamp not found", "there is no humidity value with given timsstamp %s" %timestamp + " on given device id", 'Humidity')
 
         if JSON != request.headers.get("Content-Type",""):
-            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format")
+            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format", 'Humidity')
         request_body = request.get_json(force=True)
 
         try:
             value = request_body["humidity"]
         except KeyError:
-            return create_error_response(400, "Wrong request format", "Be sure you include new humidity value")
+            return create_error_response(400, "Wrong request format", "Be sure you include new humidity value", 'Humidity')
 
         else:
             if not g.con.modify_humidity(id, timestamp, value):
-                return create_error_response(500, "Internal error", "Humidity information for %s cannot be updated" % value)
+                return create_error_response(500, "Internal error", "Humidity information for %s cannot be updated" % value, 'Humidity')
             return "", 204
 
 
@@ -466,21 +446,21 @@ class Humidity(Resource):
         #if there is already value on given timestamp
         column = 'humidity'
         if g.con.contains_value(id, timestamp, column):
-            return create_error_response(409, "Humidity value exists", "There is already humidity value with given timestamp %s" %timestamp)
+            return create_error_response(409, "Humidity value exists", "There is already humidity value with given timestamp %s" %timestamp, 'Humidity')
 
         if JSON != request.headers.get("Content-Type", ""):
-            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format")
+            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format", 'Humidity')
         request_body = request.get_json(force=True)
 
         try:
             value = request_body["humidity"]
         except KeyError:
-            return create_error_response(400, "Wrong request format", "Be sure you include new humidity value")
+            return create_error_response(400, "Wrong request format", "Be sure you include new humidity value", 'Humidity')
 
         else:
             dump = g.con.add_humidity(id, timestamp, value)
             if dump is None:
-                return create_error_response(500, "Internal error", "Humidity information for %s cannot be updated" % value)
+                return create_error_response(500, "Internal error", "Humidity information for %s cannot be updated" % value, 'Humidity')
 
             #if value was only modified (because timestamp was already there)
             elif dump is True:
@@ -497,20 +477,21 @@ class Temperature(Resource):
         if g.con.delete_temperature(id, timestamp):
             return "", 204
         else:
-            return create_error_response(404, "Unknown timestamp", "There is no a temperature value with timestamp %s" % timestamp + " on given device id")
+            return create_error_response(404, "Unknown timestamp", "There is no a temperature value with timestamp %s" % timestamp + " on given device id", 'Temperature')
 
     def get(self, id, timestamp):
         temperature_db = g.con.get_temperature(id, timestamp)
         if not temperature_db:
-            abort(404, message="There is no temperature data with timestamp %s" % timestamp + " on given device id",
-                  resource_type="Temperature",
-                  resource_url=request.path,
-                  resource_id=timestamp)
+            return create_error_response(404, "No temperature found",
+                                         'There is no temperature data on device id %s with timestamp %s' % (id, timestamp),
+                                         'Temperature')
+
 
         #create collection of links
         links = Collection(
             Self(),
-            Link('list', '/wind/api/device/' + id + '/temperatures/'),
+            Link('device', '/wind/api/device/' + id + '/'),
+            Link('collection', '/wind/api/device/' + id + '/temperatures/'),
             Link('humidities-all', '/wind/api/device/' + id + '/humidities/')
         )
 
@@ -540,20 +521,22 @@ class Temperature(Resource):
 
         #Check, that timestamp is there, check that format is correct, get value from url (json), pass to db
         if not g.con.contains_timestamp(id, timestamp):
-            return create_error_response(404, "timestamp not found", "there is no temperature value with given timsstamp %s" %timestamp + " on given device id")
+            return create_error_response(404, "timestamp not found",
+                                         "there is no temperature value with given timsstamp %s"
+                                         %timestamp + " on given device id", 'Temperature')
 
         if JSON != request.headers.get("Content-Type",""):
-            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format")
+            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format", 'Temperature')
         request_body = request.get_json(force=True)
 
         try:
             value = request_body["temperature"]
         except KeyError:
-            return create_error_response(400, "Wrong request format", "Be sure you include new temperature value")
+            return create_error_response(400, "Wrong request format", "Be sure you include new temperature value", 'Temperature')
 
         else:
             if not g.con.modify_temperature(id, timestamp, value):
-                return create_error_response(500, "Internal error", "Temperature information for %s cannot be updated" % value)
+                return create_error_response(500, "Internal error", "Temperature information for %s cannot be updated" % value, 'Temperature')
             return "", 204
 
 
@@ -574,24 +557,24 @@ class Temperature(Resource):
          * Returns 500 if the message could not be added to database.
         '''
 
-        #if there is already value on given timestamp
+        # check if there is already value on given timestamp
         column = 'temperature'
         if g.con.contains_value(id, timestamp, column):
-            return create_error_response(409, "temperature value exists", "There is already temperature value with given timestamp %s" %timestamp)
+            return create_error_response(409, "temperature value exists", "There is already temperature value with given timestamp %s" %timestamp, 'Temperature')
 
         if JSON != request.headers.get("Content-Type", ""):
-            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format")
+            return create_error_response(415, "UnsupportedMediaType", "Use a JSON compatible format", 'Temperature')
         request_body = request.get_json(force=True)
 
         try:
             value = request_body["temperature"]
         except KeyError:
-            return create_error_response(400, "Wrong request format", "Be sure you include new temperature value")
+            return create_error_response(400, "Wrong request format", "Be sure you include new temperature value", 'Temperature')
 
         else:
             dump = g.con.add_temperature(id, timestamp, value)
             if dump is None:
-                return create_error_response(500, "Internal error", "temperature information for %s cannot be updated" % value)
+                return create_error_response(500, "Internal error", "temperature information for %s cannot be updated" % value, 'Temperature')
 
             #if value was only modified (because timestamp was already there)
             elif dump is True:
@@ -604,7 +587,7 @@ class Temperature(Resource):
 
 
 #ERROR HANDLERS Borrowed slightly from exercises...
-def create_error_response(status_code, title, message):
+def create_error_response(status_code, title, message, resource_type=None):
     """
     : param integer status_code: The HTTP status code of the response
     : param str title: A short description of the problem
@@ -619,11 +602,8 @@ def create_error_response(status_code, title, message):
         resource_url = request.path
 
     #Muotoillaan errorin palautus ja pistellään responsensa
-    dump = {"resource_url": resource_url, "message": title, "info": message}
+    dump = {"resource_url": resource_url, "resource_type": resource_type, "message": title, "info": message}
     return Response(json.dumps(dump), status_code, mimetype=JSONHAL)
-
-    #old response for later use...never
-    #return make_response(jsonify(title, message, resource_url), status_code)
 
 
 @app.errorhandler(404)
