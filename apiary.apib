@@ -1,0 +1,435 @@
+FORMAT: 1A
+HOST: http://localhost:5000
+
+# PWP Weather API
+
+This API provides functionalities to access wind measurement data.
+Functionalities allow to view, create, delete and modify the following data: 
+wind speed, direction, humidity, temperature and battery voltage.
+
+## Devices list [/wind/api/devices/]
+
+List all available measurement devices
+
+### list devices [GET]
+
+Get a list of all measurement devices
+
++ Response 200 (application/hal+json)
+
+        [
+            {
+                "device_id": 1, 
+                "reg_nro": "ABC-123", 
+                "type": "Met Mast", 
+                "location": "Ahvenanmaa"
+            } 
+            {
+                "device_id": 2, 
+                "reg_nro": "XYZ-789", 
+                "type": "Sodar", 
+                "location": "Hanko"
+            }
+        ]
+
+
+## Wind Speeds List [/wind/api/device/{id}/speeds/]
+
+List of all wind speed values on given device id
+
++ Parameters
+    + id: `2' (int) - The id of the device
+
+### List speed values [GET]
+
+Get a list of all wind speed values
+
++ Response 200 (application/hal+json)
+    
+        [
+            {
+                "timestamp": 133,
+                "speed": 7.29
+            }
+            {
+                "timestamp": 134,
+                "speed": 9.92
+            }
+            {
+                "timestamp": 135,
+                "speed": 8.75
+            }
+            {
+                "timestamp": 136,
+                "speed": 7.24
+            }
+        ]
+
+
+## Battery Voltages List [/wind/api/device/{id}/batteries/] 
+
+List of all battery values on a given device id
+
++ Parameters
+    + id: `2' (int) - The id of the device
+
+### List battery values [GET]
+
+Get a list of all battery voltage values
+
++ Response 200 (application/hal+json)
+        
+        [
+            {
+                "timestamp": 136,
+                "battery": 1287
+            }
+            {
+                "timestamp": 137,
+                "battery": 1285
+            }
+            
+        ]
+
+
+## Directions List [/wind/api/device/{id}/directions/] 
+
+List of all directions on a given device id
+
++ Parameters
+    + id: `2' (int) - The id of the device
+
+### List directions values [GET]
+
+Get a list of all direction values
+
++ Response 200 (application/hal+json)
+        
+        [
+            {
+                "timestamp": 136,
+                "direction": 245
+            }
+            {
+                "timestamp": 137,
+                "direction": 234
+            }
+            
+        ]
+
+
+## Temperatures List [/wind/api/device/{id}/temperatures/] 
+
+List of all temperature values on a given device id
+
++ Parameters
+    + id: `2' (int) - The id of the device
+
+### List temperature values [GET]
+
+Get a list of all temperature values
+
++ Response 200 (application/hal+json)
+        
+        [
+            {
+                "timestamp": 136,
+                "battery": 122
+            }
+            {
+                "timestamp": 137,
+                "battery": 150
+            }
+            
+        ]
+
+
+## Humidities List [/wind/api/device/{id}/humidities/]
+
+List of all humidity values on a given device id
+
++ Parameters
+    + id: `2' (int) - The id of the device
+
+### List humidity values [GET]
+
+Get a list of all humidity values
+
++ Response 200 (application/hal+json)
+        
+        [
+            {
+                "timestamp": 136,
+                "humidity": 77
+            }
+            {
+                "timestamp": 137,
+                "humidity": 78
+            }
+            
+        ]
+
+
+## Device [/wind/api/device/{id}]
+
+Information of device on a given id
+
++ Parameters
+    + id: `2` (int) - The id of the device
+    
+### Get device information [GET]
+
+Get information of the device 
+
++ Response 200 (application/hal+json)
+
+    Device information received
+    
+    + Body
+            
+            {
+                "device_id": 2, 
+                "reg_nro": "XYZ-789", 
+                "type": "Sodar", 
+                "location": 
+                "Hanko"
+            }
+
++ Response 404
+
+    The timestamp provided does not exist in DB
+    
+    + Body
+    
+            {
+                "resource_url": "/wind/api/device/3", 
+                "resource_type": "Device", 
+                "message": "No device found", 
+                "info": "There is no device info on given device id 3"
+            }
+
+
+## Speed [/wind/api/device/{id}/speed/{timestamp}]
+
+Value of wind speed on a given device id
+
++ Parameters
+    + id: `2' (int) - The id of the device
+    + timestamp: `53` (int) - The timestamp of the speed value
+
+### Get speed value [GET]
+
+Get speed value @timestamp
+
++ Response 200 (application/hal+json)
+
+    Speed value received
+
+    + Body
+    
+            {
+                "timestamp": 136,
+                "speed": 7.53
+            }
+
++ Response 404
+
+    The timestamp provided does not exist in DB
+    
+    + Body
+    
+            {
+                "message": "There is no speed data with timestamp 876. You have requested this URI [/wind/api/speed/876] but did you mean /wind/api/speed/<timestamp> or /wind/api/speeds/ or /wind/api/temperature/<timestamp> ?",
+                "resource_type": "Speed",
+                "resource_url": "/wind/api/speed/876",
+                "resource_id": "876"
+            }
+
+
+## Humidity [/wind/api/device/{id}/humidity/{timestamp}]
+
+Value of humidity
+
++ Parameters
+    + id: `2' (int) - The id of the device
+    + timestamp: `53` (int) - The timestamp of the Humidity value
+
+### Get humidity value [GET]
+
+Get humidity value @ timetstamp
+
++ Response 200 (application/hal+json)
+
+    Humidity value received
+    
+    + Body
+
+            {
+                "timestamp": 136,
+                "humidity": 77
+            }
+        
++ Response 404
+
+    The timestamp provided does not exist in DB
+    
+    + Body
+    
+            {
+                "message": "There is no humidity data with timestamp 689. You have requested this URI [/wind/api/humidity/689] but did you mean /wind/api/humidity/<timestamp> or /wind/api/humidities/ or /wind/api/directions/ ?",
+                "resource_type": "Humidity",
+                "resource_url": "/wind/api/humidity/689",
+                "resource_id": "689"
+            }
+
+### Modify humidity value [PUT]
+
+Modify humidity value @ timetstamp
+
++ Request (application/json)
+
+    + Body
+            
+            {
+                "humidity": "82"
+            }
+            
++ Response 204
+    
+    The humidity value is correctly modified
+    
+    + Body
+    
++ Response 400 (application/hal+json)
+    
+
+### Insert new humidity value [POST]
+
+Insert humidity value @ timetstamp
+
++ Request (application/json)
+
+    + Body
+            
+            {
+                "humidity": "82"
+            }
+            
++ Response 204
+    
+    The humidity value was correctly inserted
+    
+    + Body
+    
++ Response 400 (application/hal+json)
+
+
+### Delete humidity value [DELETE]
+
+Delete humidity value @ timetstamp
+
++ Request (application/json)
+
+    + Body
+            
++ Response 204
+    
+    The humidity value was correctly deleted
+    
+    + Body
+    
++ Response 400 (application/hal+json)
+
+## Temperature [/wind/api/device/{id}/temperature/{timestamp}]
+
+Value of temperature
+
++ Parameters
+    + id: `2' (int) - The id of the device
+    + timestamp: `53` (int) - The timestamp of the temperature value
+
+### Get temperature value [GET]
+
+Get temperature value @ timestamp
+
++ Response 200 (application/hal+json)
+
+    Temperature value received
+    
+    + Body
+    
+            {
+                "timestamp": 136,
+                "temperature": 77
+            }
+
++ Response 404
+
+    The timestamp provided does not exist in DB
+    
+    + Body
+    
+            {
+                "message": "There is no temperature data with timestamp 567. You have requested this URI [/wind/api/temperature/567] but did you mean /wind/api/temperature/<timestamp> or /wind/api/temperatures/ or /wind/api/speed/<timestamp> ?",
+                "resource_type": "Temperature",
+                "resource_url": "/wind/api/temperature/567",
+                "resource_id": "567"
+            }
+
+
+### Modify temperature value [PUT]
+
+Modify temperature value @ timetstamp
+
++ Request (application/json)
+
+    + Body
+            
+            {
+                "temperature": "82"
+            }
+            
++ Response 204
+    
+    The temperature value was correctly modified
+    
+    + Body
+    
++ Response 400 (application/hal+json)
+
+### Insert new temperature value [POST]
+
+Insert temperature value @ timetstamp
+
++ Request (application/json)
+
+    + Body
+            
+            {
+                "temperature": "82"
+            }
+            
++ Response 204
+    
+    The temperature value was correctly inserted
+    
+    + Body
+    
++ Response 400 (application/hal+json)
+
+
+### Delete temperature value [DELETE]
+
+Delete temperature value @ timetstamp
+
++ Request (application/json)
+
+    + Body
+            
++ Response 204
+    
+    The temperature value was correctly deleted
+    
+    + Body
+    
++ Response 400 (application/hal+json)
