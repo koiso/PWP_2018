@@ -32,7 +32,7 @@ app.config.update({"Engine": dbhandler.Engine()})
 app.response_class = Response
 
 #atart api
-cors = CORS(app, resources={r"/api/wind/*": {"origins": "*"}})
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
 api = Api(app)
 
 
