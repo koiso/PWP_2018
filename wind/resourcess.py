@@ -9,6 +9,8 @@ from flask_restful import Resource, Api, abort
 from flask_hal import HALResponse as Response
 from flask_hal.link import Collection, Link, Self
 
+from flask_cors import CORS
+
 from werkzeug.exceptions import NotFound,  UnsupportedMediaType
 
 import dbhandler
@@ -21,8 +23,8 @@ JSON = "application/json"
 JSONHAL = "application/hal+json"
 
 #for testing
-#app = Flask(__name__)
-app = Flask(__name__, static_folder="static", static_url_path="/.")
+app = Flask(__name__)
+#app = Flask(__name__, static_folder="static", static_url_path="/.")
 app.debug = True
 app.config.update({"Engine": dbhandler.Engine()})
 
@@ -30,6 +32,7 @@ app.config.update({"Engine": dbhandler.Engine()})
 app.response_class = Response
 
 #atart api
+cors = CORS(app, resources={r"/api/wind/*": {"origins": "*"}})
 api = Api(app)
 
 
