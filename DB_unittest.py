@@ -6,6 +6,7 @@ from wind import dbhandler
 DB_BATH = 'db/PWP_DATA.db'
 ENGINE = dbhandler.Engine(DB_BATH)
 
+SPEED_OBJ = {'timestamp': 1, 'speed': 3.01}
 
 class DbCreateObjectsTests(unittest.TestCase):
     def test_create_speed_object(self):
@@ -29,7 +30,9 @@ class DbCreateObjectsTests(unittest.TestCase):
             row = cur.fetchone()
 
         object = self.connection._create_speed_object(row)
-        self.assertDictContainsSubset(object, )
+        self.assertDictContainsSubset(object, SPEED_OBJ)
+
+
 
 '''
 class DbGetTests(unittest.TestCase):

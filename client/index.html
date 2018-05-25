@@ -1,0 +1,159 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="plot.js"></script>
+</head>
+<body>
+  Devices
+<select id="devices">
+</select>
+<br><input type="checkbox" value="temperatures"/>temperatures <button id="add" value="temperature">add</button>
+<br><input type="checkbox" value="speeds"/>speeds <button id="add" value="speed">add</button>
+<br><input type="checkbox" value="humidities"/>humidities <button id="add" value="humidity">add</button>
+<br><input type="checkbox" value="batteries"/>batteries <button id="add" value="battery">add</button>
+<div id="graph" style="width:1000px;height:500px;"></div>
+<script>
+jQuery("button#add").on("click",function(e){
+  if (jQuery("#devices").val()=="0") return false;
+var k = jQuery(this).val();
+var p=prompt("add new "+jQuery(this).val()+", timestamp:");
+if (p!=null){
+var url = api_url+"device/"+jQuery("#devices").val()+"/"+jQuery(this).val()+"/"+p;
+
+var v=prompt("add new "+jQuery(this).val()+", value:");
+if (v!=null){
+
+  var o={};
+  o[jQuery(this).val()]=v;
+  $.ajax({
+    type: "POST",
+    url: url,
+    data: JSON.stringify(o),
+    success: function(){jQuery( "#devices" ).change();},
+    error: function(){jQuery( "#devices" ).change();},
+    contentType:"application/json",
+      dataType:"json"
+  });
+}
+
+}
+
+
+});
+var vals={"temperatures":[],"speeds":[],"humidities":[],"batteries":[]};
+var api_url="http://localhost:5000/wind/api/";
+devicelist("#devices",'devices/');
+function devicelist(n,d){
+  query(d,function(d){
+    var re="<option value=0>select device</option>";
+    for (var i=0;i<d.items.length;i++){
+      re+="<option value='"+d.items[i].device_id+"'>"+d.items[i].reg_nro+"</option>";
+    }
+    jQuery(n).html(re);
+  });
+}
+jQuery("input[type='checkbox']").change(function() {
+  Plotly.purge("graph");
+  var val=jQuery(this).val();
+    if(this.checked) {
+        if (jQuery("#devices").val()!="0"){
+        query("device/"+jQuery("#devices").val()+"/"+val+"/",function(d){vals[val]=d.items;plots($("#devices :selected").text());});
+      }
+    }
+    else {
+      vals[val]=[];
+      plots($("#devices :selected").text());
+    }
+
+});
+jQuery( "#devices" ).change(function() {
+  if (jQuery("#devices").val()!="0")
+  jQuery("input:checkbox:checked").each(function(){
+    jQuery(this).change();
+  });
+
+  else Plotly.purge("graph");
+});
+
+function query(q,delegate){
+  $.get(api_url+q).done(function (data) {
+      console.log(api_url+q);
+      delegate(data);
+  });
+}
+function plots(d){
+  var arrs;
+  var a1=[],a2=[];
+  for (var i = 0, len = vals["temperatures"].length; i < len; i++) {
+    a1[i]=vals["temperatures"][i].timestamp;
+    a2[i]=parseInt(vals["temperatures"][i].temperature)/10;
+  }
+  var b1=[],b2=[];
+  for (var i = 0, len = vals["speeds"].length; i < len; i++) {
+    b1[i]=vals["speeds"][i].timestamp;
+    b2[i]=vals["speeds"][i].speed;
+  }
+  var c1=[],c2=[];
+  for (var i = 0, len = vals["humidities"].length; i < len; i++) {
+    c1[i]=vals["humidities"][i].timestamp;
+    c2[i]=vals["humidities"][i].humidity;
+  }
+  var d1=[],d2=[];
+  for (var i = 0, len = vals["batteries"].length; i < len; i++) {
+    d1[i]=vals["batteries"][i].timestamp;
+    d2[i]=parseInt(vals["batteries"][i].battery)/100;
+  }
+
+  var layout = {
+    hovermode:'closest',
+    title: d,
+    xaxis: {title: 'timestamp'},
+    yaxis: {title: 'value'}
+  };
+  var data = [
+    {x:a1,y:a2,name:"temperature",type:"scatter"},
+    {x:b1,y:b2,name:"speed",type:"scatter"},
+    {x:c1,y:c2,name:"humidity",type:"scatter"},
+    {x:d1,y:d2,name:"battery",type:"scatter"}
+  ];
+	Plotly.newPlot("graph",data,layout);
+  document.getElementById("graph").on('plotly_click', function(data){
+    for(var i=0; i<data.points.length; i++){
+      if (data.points[i].data.name!="temperature" && data.points[i].data.name!="humidity") return false;
+            var url = api_url+"device/"+jQuery("#devices").val()+"/"+data.points[i].data.name+"/"+data.points[i].x;
+            var p=prompt("change value for "+data.points[i].data.name+" with timestamp "+data.points[i].x+"\nleave empty to delete",data.points[i].y);
+            if (p!=null){
+              /*nämä requestit voi korjata jos vikaa*/
+              if (p==""){/*poisto*/
+                $.ajax({
+                  type: "DELETE",
+                  url: url,
+                  success: function(){jQuery( "#devices" ).change();},
+                  error: function(){jQuery( "#devices" ).change();},
+                  contentType:"application/json",
+                    dataType:"json"
+                });
+              }
+              /*muutos*/
+              else{
+                var o={};
+                o[data.points[i].data.name]=p;
+              $.ajax({
+                type: "PUT",
+                url: url,
+                data: JSON.stringify(o),
+                success: function(){jQuery( "#devices" ).change();},
+                error: function(){jQuery( "#devices" ).change();},
+                contentType:"application/json",
+                  dataType:"json"
+              });
+            }
+            }
+    }
+});
+}
+</script>
+</body>
+</html>
