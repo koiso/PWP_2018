@@ -122,7 +122,7 @@ class Connection(object):
         return {'timestamp': row['date'], 'vertical_velocity': row['50_vertical_velocity']}
 
     def _create_std_vertical_velocity_object(self, row):
-        return {'timestamp': row['date'], 'std_vertical_velocity': row['50_vertical_velocity']}
+        return {'timestamp': row['date'], 'std_vertical_velocity': row['50_std_w']}
 
     def _create_quality_object(self, row):
         return {'timestamp': row['date'], 'quality': row['50_quality']}
@@ -143,6 +143,10 @@ class Connection(object):
             :py:meth:`_create_device_object` or None if device with given id does not exist
         '''
 
+        #match = int(id)
+        #if match is None:
+        #    raise ValueError("The id is malformed")
+
         #Query for speed
         query = 'SELECT * FROM WIND_DEVICES WHERE device_id = ?'
 
@@ -151,7 +155,7 @@ class Connection(object):
         cur = self.con.cursor()
 
         #Execute main SQL statement
-        qvalue = (id)
+        qvalue = (id,)
         cur.execute(query, qvalue)
 
         #Do the response shait
@@ -249,6 +253,12 @@ class Connection(object):
         :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
         '''
 
+        try:
+            id = int(id)
+            timestamp = int(timestamp)
+        except(ValueError):
+            raise ValueError("The deviceid is malformed")
+
         query1 = 'SELECT temperature FROM WIND_DATA WHERE device_id = ? AND date = ?'
         query2 = 'UPDATE WIND_DATA SET temperature = "" WHERE device_id = ? AND date = ?'
 
@@ -258,7 +268,7 @@ class Connection(object):
         qvalue = (id, timestamp,)
         cur.execute(query1, qvalue, )
         row = cur.fetchone()
-        print(row)
+        #print(row)
 
         #if timestamp does not exist
         if row is None:
@@ -290,6 +300,27 @@ class Connection(object):
         :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
         '''
 
+        try:
+            id = int(id)
+            timestamp = int(timestamp)
+        except(ValueError):
+            raise ValueError("The deviceid is malformed")
+
+        #check if noexisting timestamp
+        query2 = 'SELECT * FROM WIND_DATA WHERE device_id = ? AND date = ?'
+        qvalue2 = (id, timestamp,)
+
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+
+        cur.execute(query2, qvalue2,)
+
+        #Do the response shait
+        row = cur.fetchone()
+        if row is None:
+            return False
+
+
         query = 'UPDATE WIND_DATA SET temperature = ? WHERE device_id = ? AND date = ?'
         qvalue = (value, id, timestamp,)
 
@@ -316,6 +347,13 @@ class Connection(object):
         # if there is a timestamp: temperature value is checked to be null already in method call
         # add value to temperature with given timestamp
         # created this for usability, we want to add value even if there is a timestamp already (RESTISH?)
+
+        try:
+            id = int(id)
+            timestamp = int(timestamp)
+        except(ValueError):
+            raise ValueError("The messageid is malformed")
+
         test = self.contains_timestamp(id, timestamp)
         if test:
             returnable_boolean = self.modify_temperature(id, timestamp, value)
@@ -430,6 +468,12 @@ class Connection(object):
         :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
         '''
 
+        try:
+            id = int(id)
+            timestamp = int(timestamp)
+        except(ValueError):
+            raise ValueError("The deviceid is malformed")
+
         query1 = 'SELECT humidity FROM WIND_DATA WHERE device_id = ? AND date = ?'
         query2 = 'UPDATE WIND_DATA SET humidity = "" WHERE device_id = ? AND date = ?'
 
@@ -441,23 +485,29 @@ class Connection(object):
         row = cur.fetchone()
 
         #if timestamp does not exist
-        if row is None:
+        if row is "":
+            #prin("1")
             return False
         else:
-            temp = row["humidity"]
+            #print("2")
+            humi = row["humidity"]
         #if temperature is already deleted
-        if temp == "":
+        if humi == "" or None:
+            print("3")
             return False
         else:
+            #print("4")
             #remove value
             self.con.row_factory = sqlite3.Row
             cur = self.con.cursor()
             qvalue = (id, timestamp,)
             try:
+                #print("5")
                 cur.execute(query2, qvalue,)
                 self.con.commit()
                 return True
             except sqlite3.Error as e:
+                #print("6")
                 print("Error %s:" % (e.args[0]))
                 return False
 
@@ -465,10 +515,31 @@ class Connection(object):
     def modify_humidity(self, id, timestamp, value):
         '''
         modifies the humidity value on timestamp with value given as argument
+        :param id
         :param timestamp:
         :param value:
         :return: True (204) if value was deleted, else False (if deleted already, or timestamp does not exist)
         '''
+
+        try:
+            id = int(id)
+            timestamp = int(timestamp)
+        except(ValueError):
+            raise ValueError("The deviceid is malformed")
+
+        #check if noexisting timestamp
+        query2 = 'SELECT * FROM WIND_DATA WHERE device_id = ? AND date = ?'
+        qvalue2 = (id, timestamp,)
+
+        self.con.row_factory = sqlite3.Row
+        cur = self.con.cursor()
+
+        cur.execute(query2, qvalue2,)
+
+        #Do the response shait
+        row = cur.fetchone()
+        if row is None:
+            return False
 
         query = 'UPDATE WIND_DATA SET humidity = ? WHERE device_id = ? AND date = ?'
 
@@ -498,6 +569,13 @@ class Connection(object):
         # if there is a timestamp: humidity value is checked to be null already in method call
         # add value to humidity with given timestamp
         # created this for usability, we want to add value even if there is a timestamp already (RESTISH?)
+
+        try:
+            id = int(id)
+            timestamp = int(timestamp)
+        except(ValueError):
+            raise ValueError("The messageid is malformed")
+
         test = self.contains_timestamp(id, timestamp)
         if test:
             returnable_boolean = self.modify_humidity(id, timestamp, value)
