@@ -366,7 +366,7 @@ class Humidity(Resource):
     #delete humidity value
     def delete(self, id, timestamp):
         if g.con.delete_humidity(id, timestamp):
-            return "", 204
+            return Response("", 204, mimetype=JSONHAL)
         else:
             return create_error_response(404, "Unknown timestamp", "There is no a humidity value with timestamp %s" % timestamp + " on given device id", 'Humidity')
 
@@ -426,8 +426,8 @@ class Humidity(Resource):
         else:
             if not g.con.modify_humidity(id, timestamp, value):
                 return create_error_response(500, "Internal error", "Humidity information for %s cannot be updated" % value, 'Humidity')
-            return "", 204
-
+            #return "", 204
+            return Response("", 204, mimetype=JSONHAL)
 
     def post(self, id, timestamp):
         '''
@@ -467,18 +467,19 @@ class Humidity(Resource):
 
             #if value was only modified (because timestamp was already there)
             elif dump is True:
-                return "", 200
+                #return "", 200
+                return Response("", 204, mimetype=JSONHAL)
             else:
                 #The Location header should have an URL that points to the new resource
                 # and you can return an entity with the details also.
                 #return Response(json.dumps(dump), 201, mimetype=JSONHAL)
-                return Response(status=201, headers={"URL": api.url_for(Humidity, id=id, timestamp=timestamp)})
+                return Response(status=201, mimetype=JSONHAL, headers={"URL": api.url_for(Humidity, id=id, timestamp=timestamp)})
 
 
 class Temperature(Resource):
     def delete(self, id, timestamp):
         if g.con.delete_temperature(id, timestamp):
-            return "", 204
+            return Response("", 204, mimetype=JSONHAL)
         else:
             return create_error_response(404, "Unknown timestamp", "There is no a temperature value with timestamp %s" % timestamp + " on given device id", 'Temperature')
 
@@ -540,7 +541,7 @@ class Temperature(Resource):
         else:
             if not g.con.modify_temperature(id, timestamp, value):
                 return create_error_response(500, "Internal error", "Temperature information for %s cannot be updated" % value, 'Temperature')
-            return "", 204
+            return Response("", 204, mimetype=JSONHAL)
 
 
     def post(self, id, timestamp):
@@ -581,12 +582,12 @@ class Temperature(Resource):
 
             #if value was only modified (because timestamp was already there)
             elif dump is True:
-                return "", 200
+                return Response("", 204, mimetype=JSONHAL)
             else:
                 #The Location header should have an URL that points to the new resource
                 # and you can return an entity with the details also.
                 #return Response(json.dumps(dump), 201, mimetype=JSONHAL)
-                return Response(status=201, headers={"URL": api.url_for(Temperature, id=id, timestamp=timestamp)})
+                return Response(status=201, mimetype=JSONHAL, headers={"URL": api.url_for(Temperature, id=id, timestamp=timestamp)})
 
 
 # ERROR HANDLERS Borrowed slightly from exercises...all errors go through this method --> response is application/hal+json

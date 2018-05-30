@@ -426,9 +426,9 @@ class DbPostDeleteAddHumidityToDB(unittest.TestCase):
         print('('+self.test_delete_humidity_noexisting_id.__name__+')', \
               self.test_delete_humidity_noexisting_id.__doc__)
 
-        with self.assertRaises(TypeError):
-            resp = self.connection.delete_humidity(1, 1600)
-
+        #with self.assertRaises(TypeError):
+        resp = self.connection.delete_humidity(1, 1600)
+        self.assertFalse(resp)
 
     def test_add_humidity(self):
         self.connection = ENGINE.connect()

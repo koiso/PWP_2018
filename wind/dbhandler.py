@@ -485,8 +485,8 @@ class Connection(object):
         row = cur.fetchone()
 
         #if timestamp does not exist
-        if row is "":
-            #prin("1")
+        if row is None:
+            #print("1")
             return False
         else:
             #print("2")

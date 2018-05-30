@@ -1,0 +1,336 @@
+---
+- config:
+    - testset: "A TEST CONNECTION"
+
+- test:
+    - group: "CONNECTION"
+    - name: "Basic Connection test"
+    - url: "/wind/api/devices/"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- config:
+    - testset: "GET COLLECTIONS"
+
+- test:
+    - group: "GET COLLECTIONS"
+    - name: "Basic smoketest: devices"
+    - url: "/wind/api/devices/"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET COLLECTIONS"
+    - name: "Basic smoketest: speeds"
+    - url: "/wind/api/device/2/speeds/"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET COLLECTIONS"
+    - name: "Basic smoketest: batteries"
+    - url: "/wind/api/device/2/batteries/"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET COLLECTIONS"
+    - name: "Basic smoketest: temperatures"
+    - url: "/wind/api/device/2/temperatures/"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET COLLECTIONS"
+    - name: "Basic smoketest: humidities"
+    - url: "/wind/api/device/2/humidities/"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET COLLECTIONS"
+    - name: "Basic smoketest: directions"
+    - url: "/wind/api/device/2/directions/"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+
+- config:
+    - testset: "GET RESOURCES"
+
+- test:
+    - group: "GET RESOURCE"
+    - name: "Basic smoketest: device"
+    - url: "/wind/api/device/1"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET RESOURCE"
+    - name: "Basic smoketest: speed"
+    - url: "/wind/api/device/1/speed/34"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET RESOURCE"
+    - name: "Basic smoketest: battery"
+    - url: "/wind/api/device/1/battery/34"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET RESOURCE"
+    - name: "Basic smoketest: temperature"
+    - url: "/wind/api/device/1/temperature/34"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET RESOURCE"
+    - name: "Basic smoketest: humidity"
+    - url: "/wind/api/device/1/humidity/34"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+- test:
+    - group: "GET RESOURCE"
+    - name: "Basic smoketest: direction"
+    - url: "/wind/api/device/1/direction/34"
+    - expected_status: [200]
+    - validators:
+        - compare: {header: "content-type", expected: "application/hal+json"}
+
+
+
+- config:
+    - testset: "PUT TEMPERATURE"
+
+- test:
+    - group: "PUT TEMPERATURE"
+    - name: "Basic smoketest: put temperature OK"
+    - url: "/wind/api/device/1/temperature/34"
+    - method: "PUT"
+    - expected_status: [204]
+    - headers: {Content-Type: application/json}
+    - body: '{"temperature":"99"}'
+
+- test:
+    - group: "PUT TEMPERATURE"
+    - name: "Basic smoketest: put temperature (WRONG FORMAT)"
+    - url: "/wind/api/device/1/temperature/34"
+    - method: "PUT"
+    - expected_status: [400]
+    - headers: {Content-Type: application/json}
+    - body: '{"":""}'
+
+- test:
+    - group: "PUT TEMPERATURE"
+    - name: "Basic smoketest: put temperature (NO TIMESTAMP)"
+    - url: "/wind/api/device/1/temperature/1024"
+    - method: "PUT"
+    - expected_status: [404]
+    - headers: {Content-Type: application/json}
+    - body: '{"temperature":"99"}'
+
+- test:
+    - group: "PUT TEMPERATURE"
+    - name: "Basic smoketest: put temperature (WRONG TYPE)"
+    - url: "/wind/api/device/1/temperature/34"
+    - method: "PUT"
+    - expected_status: [415]
+    - headers: {Content-Type: application/hal+json}
+    - body: '{"temperature":"99"}'
+
+
+- config:
+    - testset: "POST TEMPERATURE"
+
+- test:
+    - group: "POST TEMPERATURE"
+    - name: "Basic smoketest: post temperature OK"
+    - url: "/wind/api/device/1/temperature/1025"
+    - method: "POST"
+    - expected_status: [201]
+    - headers: {Content-Type: application/json}
+    - body: '{"temperature":"99"}'
+
+- test:
+    - group: "POST TEMPERATURE"
+    - name: "Basic smoketest: post temperature (FORWARD TO PUT)"
+    - url: "/wind/api/device/1/temperature/120"
+    - method: "POST"
+    - expected_status: [204]
+    - headers: {Content-Type: application/json}
+    - body: '{"temperature":"99"}'
+
+- test:
+    - group: "POST TEMPERATURE"
+    - name: "Basic smoketest: post temperature (WRONG FORMAT)"
+    - url: "/wind/api/device/1/temperature/1026"
+    - method: "POST"
+    - expected_status: [400]
+    - headers: {Content-Type: application/json}
+    - body: '{"":""}'
+
+- test:
+    - group: "POST TEMPERATURE"
+    - name: "Basic smoketest: post temperature (ALREADY VALUE)"
+    - url: "/wind/api/device/1/temperature/1025"
+    - method: "POST"
+    - expected_status: [409]
+    - headers: {Content-Type: application/json}
+    - body: '{"temperature":"99"}'
+
+- test:
+    - group: "POST TEMPERATURE"
+    - name: "Basic smoketest: put temperature (WRONG TYPE)"
+    - url: "/wind/api/device/1/temperature/34"
+    - method: "PUT"
+    - expected_status: [415]
+    - headers: {Content-Type: application/hal+json}
+    - body: '{"temperature":"99"}'
+
+
+- config:
+    - testset: "DELETE TEMPERATURE"
+
+- test:
+    - group: "DELETE TEMPERATURE"
+    - name: "Basic smoketest: delete temperature OK"
+    - url: "/wind/api/device/1/temperature/1025"
+    - method: "DELETE"
+    - expected_status: [204]
+    - headers: {Content-Type: application/json}
+
+- test:
+    - group: "DELETE TEMPERATURE"
+    - name: "Basic smoketest: delete temperature (NO TIMESTAMP)"
+    - url: "/wind/api/device/1/temperature/1028"
+    - method: "DELETE"
+    - expected_status: [404]
+    - headers: {Content-Type: application/json}
+
+
+
+
+- config:
+    - testset: "PUT HUMIDITY"
+
+- test:
+    - group: "PUT HUMIDITY"
+    - name: "Basic smoketest: put humidity OK"
+    - url: "/wind/api/device/1/humidity/34"
+    - method: "PUT"
+    - expected_status: [204]
+    - headers: {Content-Type: application/json}
+    - body: '{"humidity":"99"}'
+
+- test:
+    - group: "PUT HUMIDITY"
+    - name: "Basic smoketest: put humidity (WRONG FORMAT)"
+    - url: "/wind/api/device/1/humidity/34"
+    - method: "PUT"
+    - expected_status: [400]
+    - headers: {Content-Type: application/json}
+    - body: '{"":""}'
+
+- test:
+    - group: "PUT HUMIDITY"
+    - name: "Basic smoketest: put humidity (NO TIMESTAMP)"
+    - url: "/wind/api/device/1/humidity/1024"
+    - method: "PUT"
+    - expected_status: [404]
+    - headers: {Content-Type: application/json}
+    - body: '{"humidity":"99"}'
+
+- test:
+    - group: "PUT HUMIDITY"
+    - name: "Basic smoketest: put humidity (WRONG TYPE)"
+    - url: "/wind/api/device/1/humidity/34"
+    - method: "PUT"
+    - expected_status: [415]
+    - headers: {Content-Type: application/hal+json}
+    - body: '{"humidity":"99"}'
+
+
+- config:
+    - testset: "POST HUMIDITY"
+
+- test:
+    - group: "POST HUMIDITY"
+    - name: "Basic smoketest: post humidity OK"
+    - url: "/wind/api/device/1/humidity/1029"
+    - method: "POST"
+    - expected_status: [201]
+    - headers: {Content-Type: application/json}
+    - body: '{"humidity":"99"}'
+
+- test:
+    - group: "POST HUMIDITY"
+    - name: "Basic smoketest: post humidity (FORWARD TO PUT)"
+    - url: "/wind/api/device/2/humidity/6"
+    - method: "POST"
+    - expected_status: [204]
+    - headers: {Content-Type: application/json}
+    - body: '{"humidity":"99"}'
+
+- test:
+    - group: "POST HUMIDITY"
+    - name: "Basic smoketest: post humidity (WRONG FORMAT)"
+    - url: "/wind/api/device/1/humidity/1026"
+    - method: "POST"
+    - expected_status: [400]
+    - headers: {Content-Type: application/json}
+    - body: '{"":""}'
+
+- test:
+    - group: "POST HUMIDITY"
+    - name: "Basic smoketest: post humidity (ALREADY VALUE)"
+    - url: "/wind/api/device/1/humidity/4"
+    - method: "POST"
+    - expected_status: [409]
+    - headers: {Content-Type: application/json}
+    - body: '{"humidity":"99"}'
+
+- test:
+    - group: "POST HUMIDITY"
+    - name: "Basic smoketest: put humidity (WRONG TYPE)"
+    - url: "/wind/api/device/1/humidity/34"
+    - method: "PUT"
+    - expected_status: [415]
+    - headers: {Content-Type: application/hal+json}
+    - body: '{"humidity":"99"}'
+
+
+- config:
+    - testset: "DELETE HUMIDITY"
+
+- test:
+    - group: "DELETE HUMIDITY"
+    - name: "Basic smoketest: delete humidity OK"
+    - url: "/wind/api/device/2/humidity/6"
+    - method: "DELETE"
+    - expected_status: [204]
+    - headers: {Content-Type: application/json}
+
+- test:
+    - group: "DELETE HUMIDITY"
+    - name: "Basic smoketest: delete humidity (NO TIMESTAMP)"
+    - url: "/wind/api/device/1/humidity/1099"
+    - method: "DELETE"
+    - expected_status: [404]
+    - headers: {Content-Type: application/json}
+
