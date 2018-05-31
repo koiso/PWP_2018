@@ -125,6 +125,9 @@ class DbCreateObjectsTests(unittest.TestCase):
 
 
 class DbGetDeviceFromDB(unittest.TestCase):
+    '''
+    Tests for getting device with device id
+    '''
 
     def test_get_device(self):
         self.connection = ENGINE.connect()
@@ -171,7 +174,9 @@ class DbGetDeviceFromDB(unittest.TestCase):
 
 
 class DbGetSpeedFromDB(unittest.TestCase):
-
+    '''
+    Tests for getting speed data with device id and timestamp
+    '''
     def test_get_speed(self):
         self.connection = ENGINE.connect()
 
@@ -217,7 +222,9 @@ class DbGetSpeedFromDB(unittest.TestCase):
 
 
 class DbGetDirectionFromDB(unittest.TestCase):
-
+    '''
+    Tests for getting direction data with device id and timestamp
+    '''
     def test_get_direction(self):
         self.connection = ENGINE.connect()
 
@@ -263,7 +270,9 @@ class DbGetDirectionFromDB(unittest.TestCase):
 
 
 class DbGetBatteryFromDB(unittest.TestCase):
-
+    '''
+    Tests for getting battery data with device id and timestamp
+    '''
     def test_get_battery(self):
         self.connection = ENGINE.connect()
 
@@ -309,7 +318,9 @@ class DbGetBatteryFromDB(unittest.TestCase):
                 
                 
 class DbGetTemperatureFromDB(unittest.TestCase):
-
+    '''
+    Tests for getting temperature data with device id and timestamp
+    '''
     def test_get_temperature(self):
         self.connection = ENGINE.connect()
 
@@ -355,6 +366,9 @@ class DbGetTemperatureFromDB(unittest.TestCase):
                 
                 
 class DbGetHumidityFromDB(unittest.TestCase):
+    '''
+    Tests for getting humidity data with device id and timestamp
+    '''
 
     def test_get_humidity(self):
         self.connection = ENGINE.connect()
@@ -401,6 +415,9 @@ class DbGetHumidityFromDB(unittest.TestCase):
 
 
 class DbPostDeleteAddHumidityToDB(unittest.TestCase):
+    '''
+    Tests for delete, modify and add humidity data with device id, timestamp and value
+    '''
     def test_delete_humidity(self):
         self.connection = ENGINE.connect()
 
@@ -511,6 +528,10 @@ class DbPostDeleteAddHumidityToDB(unittest.TestCase):
 
 
 class DbPostDeleteAddTemperatureToDB(unittest.TestCase):
+    '''
+    Tests for delete, modify and add temperature data with device id, timestamp and value
+    '''
+
     def test_delete_temperature(self):
         self.connection = ENGINE.connect()
 
