@@ -11,29 +11,36 @@ wind speed, direction, humidity, temperature and battery voltage.
 
 List all available measurement devices
 
-### list devices [GET]
+### List devices [GET]
 
 Get a list of all measurement devices
 
 + Response 200 (application/hal+json)
 
-        [
-            {
-                "device_id": 1, 
-                "reg_nro": "ABC-123", 
-                "type": "Met Mast", 
-                "location": "Ahvenanmaa"
-            } 
-            {
-                "device_id": 2, 
-                "reg_nro": "XYZ-789", 
-                "type": "Sodar", 
-                "location": "Hanko"
+        {
+          "_links": {
+            "self": {
+              "href": "/wind/api/devices/"
+            },
+            "device": {
+              "href": "/wind/api/device/{id}"
             }
-        ]
+          },
+          "items": [{
+            "device_id": 1,
+            "reg_nro": "ABC-123",
+            "type": "Met Mast",
+            "location": "Ahvenanmaa"
+          }, {
+            "device_id": 2,
+            "reg_nro": "XYZ-789",
+            "type": "Sodar",
+            "location": "Hanko"
+          }]
+        }
 
 
-## Wind Speeds List [/wind/api/device/{id}/speeds/]
+## Collection of Wind Speeds [/wind/api/device/{id}/speeds/]
 
 List of all wind speed values on given device id
 
@@ -45,25 +52,40 @@ List of all wind speed values on given device id
 Get a list of all wind speed values
 
 + Response 200 (application/hal+json)
-    
-        [
-            {
-                "timestamp": 133,
-                "speed": 7.29
-            }
-            {
-                "timestamp": 134,
-                "speed": 9.92
-            }
-            {
-                "timestamp": 135,
-                "speed": 8.75
-            }
-            {
-                "timestamp": 136,
-                "speed": 7.24
-            }
-        ]
+        
+        {
+            "_links": {
+                "self": {
+                    "href": "/wind/api/device/1/speeds/"
+                },
+                "device": {
+                    "href": "/wind/api/device/1/"
+                },
+                "speed": {
+                    "href": "/wind/api/device/1/speed/{timestamp}"
+                }
+            },
+             "items": [{
+                "timestamp": 1,
+                "speed": 3.01
+              }, {
+                "timestamp": 2,
+                "speed": 3.01
+              }, {
+                "timestamp": 3,
+                "speed": 5.09
+              }, {
+                "timestamp": 4,
+                "speed": 3.37
+              }, {
+                "timestamp": 5,
+                "speed": 4.15
+              }, {
+                "timestamp": 6,
+                "speed": 4.3
+              }
+            ]
+        }
 
 
 ## Battery Voltages List [/wind/api/device/{id}/batteries/] 
@@ -73,23 +95,38 @@ List of all battery values on a given device id
 + Parameters
     + id: `2' (int) - The id of the device
 
-### List battery values [GET]
+### List Battery Values [GET]
 
 Get a list of all battery voltage values
 
 + Response 200 (application/hal+json)
         
-        [
-            {
-                "timestamp": 136,
-                "battery": 1287
+        {
+          "_links": {
+            "self": {
+              "href": "/wind/api/device/1/batteries/"
+            },
+            "device": {
+              "href": "/wind/api/device/1/"
+            },
+            "battery": {
+              "href": "/wind/api/device/1/battery/{timestamp}"
             }
-            {
-                "timestamp": 137,
-                "battery": 1285
-            }
-            
-        ]
+          }
+          "items": [{
+            "timestamp": 1,
+            "battery": 1234
+          }, {
+            "timestamp": 2,
+            "battery": 1226
+          }, {
+            "timestamp": 3,
+            "battery": 1226
+          }, {
+            "timestamp": 4,
+            "battery": 1226
+          }]
+        }
 
 
 ## Directions List [/wind/api/device/{id}/directions/] 
@@ -105,18 +142,29 @@ Get a list of all direction values
 
 + Response 200 (application/hal+json)
         
-        [
             {
-                "timestamp": 136,
-                "direction": 245
-            }
-            {
-                "timestamp": 137,
-                "direction": 234
-            }
-            
-        ]
-
+              "_links": {
+                "self": {
+                  "href": "/wind/api/device/1/directions/"
+                },
+                "device": {
+                  "href": "/wind/api/device/1/"
+                },
+                "direction": {
+                  "href": "/wind/api/device/1/direction/{timestamp}"
+                }
+              },
+              "items": [{
+                "timestamp": 1,
+                "direction": 176.0
+              }, {
+                "timestamp": 2,
+                "direction": 176.0
+              }, {
+                "timestamp": 3,
+                "direction": 170.0
+              }]
+        }
 
 ## Temperatures List [/wind/api/device/{id}/temperatures/] 
 
@@ -131,18 +179,32 @@ Get a list of all temperature values
 
 + Response 200 (application/hal+json)
         
-        [
-            {
-                "timestamp": 136,
-                "battery": 122
+        {
+          "_links": {
+            "self": {
+              "href": "/wind/api/device/1/temperatures/"
+            },
+            "device": {
+              "href": "/wind/api/device/1/"
+            },
+            "temperature": {
+              "href": "/wind/api/device/1/temperature/{timestamp}"
             }
-            {
-                "timestamp": 137,
-                "battery": 150
-            }
-            
-        ]
-
+          },
+          "items": [{
+            "timestamp": 1,
+            "temperature": 114
+          }, {
+            "timestamp": 2,
+            "temperature": 114
+          }, {
+            "timestamp": 3,
+            "temperature": 114
+          }, {
+            "timestamp": 4,
+            "temperature": 114
+          }]
+        }
 
 ## Humidities List [/wind/api/device/{id}/humidities/]
 
@@ -157,18 +219,41 @@ Get a list of all humidity values
 
 + Response 200 (application/hal+json)
         
-        [
-            {
-                "timestamp": 136,
-                "humidity": 77
+        {
+          "_links": {
+            "self": {
+              "href": "/wind/api/device/1/humidities/"
+            },
+            "device": {
+              "href": "/wind/api/device/1/"
+            },
+            "humidity": {
+              "href": "/wind/api/device/1/humidity/{timestamp}"
             }
-            {
-                "timestamp": 137,
-                "humidity": 78
-            }
-            
-        ]
-
+          },
+          "items": [{
+            "timestamp": 1,
+            "humidity": 97
+          }, {
+            "timestamp": 2,
+            "humidity": 97
+          }, {
+            "timestamp": 3,
+            "humidity": 97
+          }, {
+            "timestamp": 4,
+            "humidity": 97
+          }, {
+            "timestamp": 5,
+            "humidity": 97
+          }, {
+            "timestamp": 6,
+            "humidity": 96
+          }, {
+            "timestamp": 7,
+            "humidity": 97
+          }]
+        }
 
 ## Device [/wind/api/device/{id}]
 
@@ -187,17 +272,27 @@ Get information of the device
     
     + Body
             
-            {
-                "device_id": 2, 
-                "reg_nro": "XYZ-789", 
-                "type": "Sodar", 
-                "location": 
-                "Hanko"
+              {
+              "_links": {
+                "self": {
+                  "href": "/wind/api/device/1"
+                },
+                "list": {
+                  "href": "/wind/api/devices/"
+                },
+                "data:speeds-all": {
+                  "href": "/wind/api/device/1/speeds/"
+                }
+              },
+              "device_id": 1,
+              "reg_nro": "ABC-123",
+              "type": "Met Mast",
+              "location": "Ahvenanmaa"
             }
 
 + Response 404
 
-    The timestamp provided does not exist in DB
+    The timestamp provided doesn't exist in DB
     
     + Body
     
@@ -228,13 +323,27 @@ Get speed value @timestamp
     + Body
     
             {
-                "timestamp": 136,
-                "speed": 7.53
+              "_links": {
+                "self": {
+                  "href": "/wind/api/device/2/speed/53"
+                },
+                "device": {
+                  "href": "/wind/api/device/2/"
+                },
+                "list": {
+                  "href": "/wind/api/device/2/speeds/"
+                },
+                "temperatures-all": {
+                  "href": "/wind/api/device/2/temperatures/"
+                }
+              },
+              "timestamp": 53,
+              "speed": 1.6
             }
 
 + Response 404
 
-    The timestamp provided does not exist in DB
+    The timestamp provided doesn't not exist in DB
     
     + Body
     
@@ -263,10 +372,24 @@ Get humidity value @ timetstamp
     Humidity value received
     
     + Body
-
+            
             {
-                "timestamp": 136,
-                "humidity": 77
+              "_links": {
+                "self": {
+                  "href": "/wind/api/device/2/humidity/53"
+                },
+                "device": {
+                  "href": "/wind/api/device/2/"
+                },
+                "list": {
+                  "href": "/wind/api/humidities/"
+                },
+                "directions-all": {
+                  "href": "/wind/api/device/2/directions/"
+                }
+              },
+              "timestamp": 53,
+              "humidity": 68
             }
         
 + Response 404
@@ -301,7 +424,57 @@ Modify humidity value @ timetstamp
     + Body
     
 + Response 400 (application/hal+json)
+
+    Wrong format
+
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/humidity/53",
+              "resource_type": "Humidity",
+              "message": "Wrong request format",
+              "info": "Be sure you include new humidity value"
+            }
+
++ Response 404 (application/hal+json)
     
+    No timestamp
+    
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/humidity/19999",
+              "resource_type": "Humidity",
+              "message": "timestamp not found",
+              "info": "there is no humidity value with given timsstamp 19999 on given device id"
+            }
+
++ Response 415 (application/hal+json)
+    
+    Unsupported media type
+    
+    + Body
+    
+            {
+              "resource_url": "/wind/api/device/2/humidity/53",
+              "resource_type": "Humidity",
+              "message": "UnsupportedMediaType",
+              "info": "Use a JSON compatible format"
+            }
+
++ Response 500 (application/hal+json)
+    
+    Internal error
+    
+    + Body
+    
+            {
+              "resource_url": "/wind/api/device/2/humidity/53",
+              "resource_type": "Humidity",
+              "message": "Internal error",
+              "info": "Humidity information cannot be updated"
+            }
+
 
 ### Insert new humidity value [POST]
 
@@ -340,6 +513,7 @@ Delete humidity value @ timetstamp
     
 + Response 400 (application/hal+json)
 
+
 ## Temperature [/wind/api/device/{id}/temperature/{timestamp}]
 
 Value of temperature
@@ -359,10 +533,24 @@ Get temperature value @ timestamp
     + Body
     
             {
-                "timestamp": 136,
-                "temperature": 77
+              "_links": {
+                "self": {
+                  "href": "/wind/api/device/2/temperature/53"
+                },
+                "device": {
+                  "href": "/wind/api/device/2/"
+                },
+                "list": {
+                  "href": "/wind/api/device/2/temperatures/"
+                },
+                "humidities-all": {
+                  "href": "/wind/api/device/2/humidities/"
+                }
+              },
+              "timestamp": 53,
+              "temperature": 183
             }
-
+            
 + Response 404
 
     The timestamp provided does not exist in DB
