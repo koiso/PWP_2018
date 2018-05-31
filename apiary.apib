@@ -40,7 +40,7 @@ Get a list of all measurement devices
         }
 
 
-## Collection of Wind Speeds [/wind/api/device/{id}/speeds/]
+## Wind Speeds List [/wind/api/device/{id}/speeds/]
 
 List of all wind speed values on given device id
 
@@ -295,14 +295,13 @@ Get information of the device
     The timestamp provided doesn't exist in DB
     
     + Body
-    
+                
             {
-                "resource_url": "/wind/api/device/3", 
-                "resource_type": "Device", 
-                "message": "No device found", 
-                "info": "There is no device info on given device id 3"
+              "resource_url": "/wind/api/device/3",
+              "resource_type": "Device",
+              "message": "No device found",
+              "info": "There is no device info on given device id 3"
             }
-
 
 ## Speed [/wind/api/device/{id}/speed/{timestamp}]
 
@@ -348,10 +347,83 @@ Get speed value @timestamp
     + Body
     
             {
-                "message": "There is no speed data with timestamp 876. You have requested this URI [/wind/api/speed/876] but did you mean /wind/api/speed/<timestamp> or /wind/api/speeds/ or /wind/api/temperature/<timestamp> ?",
-                "resource_type": "Speed",
-                "resource_url": "/wind/api/speed/876",
-                "resource_id": "876"
+              "resource_url": "/wind/api/device/2/speed/19999",
+              "resource_type": "Speed",
+              "message": "No speed found",
+              "info": "There is no speed data on device id 2 with timestamp 19999"
+            }
+
+
+## Battery [/wind/api/device/{id}/battery/{timestamp}]
+
+Value of battery voltage
+
++ Parameters
+    + id: `2' (int) - The id of the device
+    + timestamp: `53` (int) - The timestamp of the battery value
+
+### Get battery voltage [GET]
+
+Get battery voltage @ timetstamp
+
++ Response 200 (application/hal+json)
+
+    Battery voltage received
+    
+    + Body
+    
+            {
+            "_links": {
+                "self": {
+                    "href": "/wind/api/device/2/battery/53"
+                    },
+                "device": {
+                    "href": "/wind/api/device/2/"
+                    },
+                "list": {
+                    "href": "/wind/api/device/2/batteries/"
+                    }
+                },
+            "timestamp": 53,
+            "battery": 1263
+            }
+
+
+## Direction [/wind/api/device/{id}/direction/{timestamp}]
+
+Value of direction
+
++ Parameters
+    + id: `2' (int) - The id of the device
+    + timestamp: `53` (int) - The timestamp of the direction
+
+### Get direction value [GET]
+
+Get direction value @ timetstamp
+
++ Response 200 (application/hal+json)
+
+    Direction value received
+    
+    + Body
+    
+            {
+            "_links": {
+                "self": {
+                    "href": "/wind/api/device/2/direction/53"
+                    },
+                "device": {
+                    "href": "/wind/api/device/2/"
+                    },
+                "list": {
+                    "href": "/wind/api/device/2/direcntions/"
+                    },
+                "all-batteries": {
+                    "href": "/wind/api/device/2/batteries/"
+                }
+            }
+            "timestamp": 53,
+            "directions": 59.0
             }
 
 
@@ -488,14 +560,69 @@ Insert humidity value @ timetstamp
                 "humidity": "82"
             }
             
++ Response 201
+    
+    The humidity value and new timestamp was correctly inserted to DB
+    
+    + Body
+    
 + Response 204
     
-    The humidity value was correctly inserted
+    The humidity value was correctly inserted to DB (timestamp already existed)
     
     + Body
     
 + Response 400 (application/hal+json)
 
+    Wrong format
+
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/humidity/53",
+              "resource_type": "Humidity",
+              "message": "Wrong request format",
+              "info": "Be sure you include new humidity value"
+            }
+
++ Response 404 (application/hal+json)
+    
+    No timestamp
+    
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/humidity/19999",
+              "resource_type": "Humidity",
+              "message": "timestamp not found",
+              "info": "there is no humidity value with given timsstamp 19999 on given device id"
+            }
+
++ Response 415 (application/hal+json)
+    
+    Unsupported media type
+    
+    + Body
+    
+            {
+              "resource_url": "/wind/api/device/2/humidity/53",
+              "resource_type": "Humidity",
+              "message": "UnsupportedMediaType",
+              "info": "Use a JSON compatible format"
+            }
+
++ Response 500 (application/hal+json)
+    
+    Internal error
+    
+    + Body
+    
+            {
+              "resource_url": "/wind/api/device/2/humidity/53",
+              "resource_type": "Humidity",
+              "message": "Internal error",
+              "info": "Humidity information cannot be updated"
+            }
 
 ### Delete humidity value [DELETE]
 
@@ -511,7 +638,18 @@ Delete humidity value @ timetstamp
     
     + Body
     
-+ Response 400 (application/hal+json)
++ Response 404 (application/hal+json)
+
+    No timestamp
+    
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/humidity/19999",
+              "resource_type": "Humidity",
+              "message": "timestamp not found",
+              "info": "there is no humidity value with given timsstamp 19999 on given device id"
+            }
 
 
 ## Temperature [/wind/api/device/{id}/temperature/{timestamp}]
@@ -585,6 +723,56 @@ Modify temperature value @ timetstamp
     
 + Response 400 (application/hal+json)
 
+    Wrong format
+
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/temperature/53",
+              "resource_type": "Temperature",
+              "message": "Wrong request format",
+              "info": "Be sure you include new temperature value"
+            }
+
++ Response 404 (application/hal+json)
+    
+    No timestamp
+    
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/temperature/19999",
+              "resource_type": "Temperature",
+              "message": "timestamp not found",
+              "info": "there is no temperature value with given timsstamp 19999 on given device id"
+            }
+
++ Response 415 (application/hal+json)
+    
+    Unsupported media type
+    
+    + Body
+    
+            {
+              "resource_url": "/wind/api/device/2/temperature/53",
+              "resource_type": "Temperature",
+              "message": "UnsupportedMediaType",
+              "info": "Use a JSON compatible format"
+            }
+
++ Response 500 (application/hal+json)
+    
+    Internal error
+    
+    + Body
+    
+            {
+              "resource_url": "/wind/api/device/2/temperature/53",
+              "resource_type": "Temperature",
+              "message": "Internal error",
+              "info": "Temperature information cannot be updated"
+            }
+
 ### Insert new temperature value [POST]
 
 Insert temperature value @ timetstamp
@@ -597,13 +785,69 @@ Insert temperature value @ timetstamp
                 "temperature": "82"
             }
             
++ Response 201
+    
+    The temperature value and new timestamp was correctly inserted to DB
+    
+    + Body
+    
 + Response 204
     
-    The temperature value was correctly inserted
+    The temperature value was correctly inserted to DB (timestamp already existed)
     
     + Body
     
 + Response 400 (application/hal+json)
+
+    Wrong format
+
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/temperature/53",
+              "resource_type": "Temperature",
+              "message": "Wrong request format",
+              "info": "Be sure you include new temperature value"
+            }
+
++ Response 404 (application/hal+json)
+    
+    No timestamp
+    
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/temperature/19999",
+              "resource_type": "Temperature",
+              "message": "timestamp not found",
+              "info": "there is no temperature value with given timsstamp 19999 on given device id"
+            }
+
++ Response 415 (application/hal+json)
+    
+    Unsupported media type
+    
+    + Body
+    
+            {
+              "resource_url": "/wind/api/device/2/temperature/53",
+              "resource_type": "Temperature",
+              "message": "UnsupportedMediaType",
+              "info": "Use a JSON compatible format"
+            }
+
++ Response 500 (application/hal+json)
+    
+    Internal error
+    
+    + Body
+    
+            {
+              "resource_url": "/wind/api/device/2/temperature/53",
+              "resource_type": "Temperature",
+              "message": "Internal error",
+              "info": "Temperature information cannot be updated"
+            }
 
 
 ### Delete temperature value [DELETE]
@@ -620,4 +864,15 @@ Delete temperature value @ timetstamp
     
     + Body
     
-+ Response 400 (application/hal+json)
++ Response 404 (application/hal+json)
+
+    No timestamp
+    
+    + Body
+            
+            {
+              "resource_url": "/wind/api/device/2/humidity/19999",
+              "resource_type": "Humidity",
+              "message": "timestamp not found",
+              "info": "there is no humidity value with given timsstamp 19999 on given device id"
+            }
